@@ -98,7 +98,8 @@ def parse_kml_file(kml_path: str) -> List[dict]:
 def main():
     """Main function to parse KML and create configuration."""
     # Input KML file
-    kml_file = Path(__file__).parent.parent.parent / "03 - RegenAg" / "Tatasciore's Olive Fields.kml"
+    # Go up to claude/ directory, then into 03 - RegenAg/
+    kml_file = Path(__file__).parent.parent.parent.parent / "03 - RegenAg" / "Tatasciore's Olive Fields.kml"
 
     # Output JSON file
     output_file = Path(__file__).parent.parent / "config" / "field_zones.json"

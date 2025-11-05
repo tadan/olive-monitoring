@@ -76,6 +76,30 @@ async def get_zones():
         db.close()
 
 
+@app.get("/api/zones/{zone_id}")
+async def get_zone(zone_id: int):
+    """Get a specific field zone by ID."""
+    db_gen = get_db()
+    db = next(db_gen)
+
+    try:
+        zone = db.query(FieldZone).filter(FieldZone.id == zone_id).first()
+        if not zone:
+            raise HTTPException(status_code=404, detail="Zone not found")
+
+        return {
+            "id": zone.id,
+            "name": zone.name,
+            "description": zone.description,
+            "area_hectares": float(zone.area_hectares),
+            "geometry": zone.geometry,
+            "created_at": zone.created_at.isoformat(),
+            "updated_at": zone.updated_at.isoformat()
+        }
+    finally:
+        db.close()
+
+
 @app.get("/api/zones/{zone_id}/health")
 async def get_zone_health(zone_id: int, limit: int = 10):
     """Get recent health indices for a specific zone."""
