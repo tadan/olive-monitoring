@@ -182,6 +182,11 @@ docker-compose build --no-cache processor
 docker-compose exec processor pip list | grep sentinel
 ```
 
+**Note on Requirements Files:**
+- **Processor**: Uses `requirements.txt` (includes GDAL, rasterio, geospatial libs)
+- **API**: Uses `requirements-api.txt` (lightweight, no GDAL)
+- API doesn't need GDAL since it only serves data from the database
+
 ### Disk Space Issues
 
 ```bash
