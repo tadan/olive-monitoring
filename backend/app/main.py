@@ -92,17 +92,17 @@ async def get_zone_health(zone_id: int, limit: int = 10):
         health_records = (
             db.query(HealthIndex)
             .filter(HealthIndex.zone_id == zone_id)
-            .order_by(desc(HealthIndex.date))
+            .order_by(desc(HealthIndex.acquisition_date))
             .limit(limit)
             .all()
         )
 
         return [{
-            "date": record.date.isoformat(),
+            "date": record.acquisition_date.isoformat(),
             "ndvi_mean": float(record.ndvi_mean),
             "ndmi_mean": float(record.ndmi_mean),
-            "health_score": record.health_score,
-            "cloud_coverage": float(record.cloud_coverage) if record.cloud_coverage else None
+            "health_score": record.vegetation_health_score,
+            "cloud_coverage": None  # Cloud coverage is in SatelliteImage, not HealthIndex
         } for record in health_records]
     finally:
         db.close()
@@ -126,14 +126,15 @@ async def get_zone_alerts(zone_id: int, active_only: bool = True):
         if active_only:
             query = query.filter(Alert.resolved_at.is_(None))
 
-        alerts = query.order_by(desc(Alert.created_at)).all()
+        alerts = query.order_by(desc(Alert.detected_at)).all()
 
         return [{
             "id": alert.id,
             "type": alert.alert_type,
             "severity": alert.severity,
-            "message": alert.message,
-            "created_at": alert.created_at.isoformat(),
+            "title": alert.title,
+            "description": alert.description,
+            "detected_at": alert.detected_at.isoformat(),
             "resolved_at": alert.resolved_at.isoformat() if alert.resolved_at else None
         } for alert in alerts]
     finally:
@@ -156,7 +157,7 @@ async def get_dashboard_summary():
             latest_health = (
                 db.query(HealthIndex)
                 .filter(HealthIndex.zone_id == zone.id)
-                .order_by(desc(HealthIndex.date))
+                .order_by(desc(HealthIndex.acquisition_date))
                 .first()
             )
 
@@ -171,8 +172,8 @@ async def get_dashboard_summary():
                 "zone_id": zone.id,
                 "zone_name": zone.name,
                 "area_hectares": float(zone.area_hectares),
-                "latest_health_score": latest_health.health_score if latest_health else None,
-                "latest_health_date": latest_health.date.isoformat() if latest_health else None,
+                "latest_health_score": latest_health.vegetation_health_score if latest_health else None,
+                "latest_health_date": latest_health.acquisition_date.isoformat() if latest_health else None,
                 "active_alerts": active_alerts
             })
 
