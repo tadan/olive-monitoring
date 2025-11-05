@@ -5,7 +5,8 @@ from typing import List, Optional
 from datetime import date, datetime
 
 from app.config import settings
-from app.database import get_db, FieldZone, HealthIndex, Alert
+from app.database import get_db
+from app.models import FieldZone, HealthIndex, Alert
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 
