@@ -2,8 +2,8 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# Copy requirements
-COPY backend/requirements.txt .
+# Copy API-only requirements (no GDAL)
+COPY backend/requirements-api.txt requirements.txt
 
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
