@@ -30,9 +30,11 @@ def load_zones_from_config(config_path: str):
     db = SessionLocal()
 
     try:
-        print(f"📍 Location: {config['location']['name']}, {config['location']['region']}")
-        print(f"   Coordinates: {config['location']['center_lat']:.3f}°N, {config['location']['center_lon']:.3f}°E")
-        print()
+        # Print location info if available (optional in config)
+        if 'location' in config:
+            print(f"📍 Location: {config['location']['name']}, {config['location']['region']}")
+            print(f"   Coordinates: {config['location']['center_lat']:.3f}°N, {config['location']['center_lon']:.3f}°E")
+            print()
 
         # Delete existing zones
         existing_count = db.query(FieldZone).count()
