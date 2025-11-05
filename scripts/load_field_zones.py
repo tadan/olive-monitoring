@@ -2,9 +2,18 @@
 import json
 import sys
 from pathlib import Path
+import os
 
-# Add parent directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent / "backend"))
+# Add app directory to path (works both locally and in Docker)
+script_dir = Path(__file__).parent
+project_root = script_dir.parent
+
+# Check if we're in Docker (app directory at /app)
+if Path("/app/app").exists():
+    sys.path.insert(0, "/app")
+else:
+    # Running locally
+    sys.path.insert(0, str(project_root / "backend"))
 
 from app.database import get_db_engine, get_session_local
 from app.models import FieldZone, Base
@@ -70,11 +79,16 @@ def load_zones_from_config(config_path: str):
 
 def main():
     """Main function."""
-    config_file = Path(__file__).parent.parent / "config" / "field_zones.json"
+    script_dir = Path(__file__).parent
+    project_root = script_dir.parent
+
+    # Try Docker path first, then local path
+    config_file = project_root / "config" / "field_zones.json"
 
     if not config_file.exists():
         print(f"❌ Configuration file not found: {config_file}")
         print("   Run parse_kml_zones.py first to generate the configuration.")
+        print(f"   Looking in: {config_file.absolute()}")
         sys.exit(1)
 
     print("=" * 60)
