@@ -8,7 +8,7 @@ from app.config import settings
 from app.database import get_db
 from app.models import FieldZone, HealthIndex, Alert
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
+from sqlalchemy import desc, text
 
 app = FastAPI(
     title="Olive Farm Satellite Monitoring API",
@@ -42,7 +42,7 @@ async def health_check():
     try:
         # Test database connection
         db = next(get_db())
-        db.execute("SELECT 1")
+        db.execute(text("SELECT 1"))
         db_status = "connected"
     except Exception as e:
         db_status = f"error: {str(e)}"
