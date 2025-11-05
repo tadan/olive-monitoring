@@ -42,5 +42,18 @@ def get_session() -> Session:
         pass  # Session will be closed by caller
 
 
+def get_db():
+    """
+    FastAPI dependency for database sessions.
+    Yields a database session and ensures it's closed after use.
+    """
+    SessionLocal = get_session_local()
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
 # Base class for models
 Base = declarative_base()
