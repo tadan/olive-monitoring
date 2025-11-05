@@ -2,7 +2,6 @@
 import json
 import sys
 from pathlib import Path
-import os
 
 # Add app directory to path (works both locally and in Docker)
 script_dir = Path(__file__).parent
