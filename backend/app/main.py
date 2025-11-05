@@ -39,13 +39,17 @@ async def root():
 @app.get("/health")
 async def health_check():
     """Detailed health check with database connectivity."""
+    db_gen = get_db()
+    db = next(db_gen)
+
     try:
         # Test database connection
-        db = next(get_db())
         db.execute(text("SELECT 1"))
         db_status = "connected"
     except Exception as e:
         db_status = f"error: {str(e)}"
+    finally:
+        db.close()
 
     return {
         "status": "ok",
@@ -57,111 +61,127 @@ async def health_check():
 @app.get("/api/zones")
 async def get_zones():
     """Get all field zones."""
-    db = next(get_db())
-    zones = db.query(FieldZone).all()
+    db_gen = get_db()
+    db = next(db_gen)
 
-    return [{
-        "id": zone.id,
-        "name": zone.name,
-        "area_hectares": float(zone.area_hectares),
-        "geometry": zone.geometry
-    } for zone in zones]
+    try:
+        zones = db.query(FieldZone).all()
+        return [{
+            "id": zone.id,
+            "name": zone.name,
+            "area_hectares": float(zone.area_hectares),
+            "geometry": zone.geometry
+        } for zone in zones]
+    finally:
+        db.close()
 
 
 @app.get("/api/zones/{zone_id}/health")
 async def get_zone_health(zone_id: int, limit: int = 10):
     """Get recent health indices for a specific zone."""
-    db = next(get_db())
+    db_gen = get_db()
+    db = next(db_gen)
 
-    # Verify zone exists
-    zone = db.query(FieldZone).filter(FieldZone.id == zone_id).first()
-    if not zone:
-        raise HTTPException(status_code=404, detail="Zone not found")
+    try:
+        # Verify zone exists
+        zone = db.query(FieldZone).filter(FieldZone.id == zone_id).first()
+        if not zone:
+            raise HTTPException(status_code=404, detail="Zone not found")
 
-    # Get recent health indices
-    health_records = (
-        db.query(HealthIndex)
-        .filter(HealthIndex.zone_id == zone_id)
-        .order_by(desc(HealthIndex.date))
-        .limit(limit)
-        .all()
-    )
+        # Get recent health indices
+        health_records = (
+            db.query(HealthIndex)
+            .filter(HealthIndex.zone_id == zone_id)
+            .order_by(desc(HealthIndex.date))
+            .limit(limit)
+            .all()
+        )
 
-    return [{
-        "date": record.date.isoformat(),
-        "ndvi_mean": float(record.ndvi_mean),
-        "ndmi_mean": float(record.ndmi_mean),
-        "health_score": record.health_score,
-        "cloud_coverage": float(record.cloud_coverage) if record.cloud_coverage else None
-    } for record in health_records]
+        return [{
+            "date": record.date.isoformat(),
+            "ndvi_mean": float(record.ndvi_mean),
+            "ndmi_mean": float(record.ndmi_mean),
+            "health_score": record.health_score,
+            "cloud_coverage": float(record.cloud_coverage) if record.cloud_coverage else None
+        } for record in health_records]
+    finally:
+        db.close()
 
 
 @app.get("/api/zones/{zone_id}/alerts")
 async def get_zone_alerts(zone_id: int, active_only: bool = True):
     """Get alerts for a specific zone."""
-    db = next(get_db())
+    db_gen = get_db()
+    db = next(db_gen)
 
-    # Verify zone exists
-    zone = db.query(FieldZone).filter(FieldZone.id == zone_id).first()
-    if not zone:
-        raise HTTPException(status_code=404, detail="Zone not found")
+    try:
+        # Verify zone exists
+        zone = db.query(FieldZone).filter(FieldZone.id == zone_id).first()
+        if not zone:
+            raise HTTPException(status_code=404, detail="Zone not found")
 
-    # Query alerts
-    query = db.query(Alert).filter(Alert.zone_id == zone_id)
+        # Query alerts
+        query = db.query(Alert).filter(Alert.zone_id == zone_id)
 
-    if active_only:
-        query = query.filter(Alert.resolved_at.is_(None))
+        if active_only:
+            query = query.filter(Alert.resolved_at.is_(None))
 
-    alerts = query.order_by(desc(Alert.created_at)).all()
+        alerts = query.order_by(desc(Alert.created_at)).all()
 
-    return [{
-        "id": alert.id,
-        "type": alert.alert_type,
-        "severity": alert.severity,
-        "message": alert.message,
-        "created_at": alert.created_at.isoformat(),
-        "resolved_at": alert.resolved_at.isoformat() if alert.resolved_at else None
-    } for alert in alerts]
+        return [{
+            "id": alert.id,
+            "type": alert.alert_type,
+            "severity": alert.severity,
+            "message": alert.message,
+            "created_at": alert.created_at.isoformat(),
+            "resolved_at": alert.resolved_at.isoformat() if alert.resolved_at else None
+        } for alert in alerts]
+    finally:
+        db.close()
 
 
 @app.get("/api/dashboard/summary")
 async def get_dashboard_summary():
     """Get summary statistics for dashboard."""
-    db = next(get_db())
+    db_gen = get_db()
+    db = next(db_gen)
 
-    # Get all zones with their latest health data
-    zones = db.query(FieldZone).all()
+    try:
+        # Get all zones with their latest health data
+        zones = db.query(FieldZone).all()
 
-    summary = []
-    for zone in zones:
-        # Get latest health index
-        latest_health = (
-            db.query(HealthIndex)
-            .filter(HealthIndex.zone_id == zone.id)
-            .order_by(desc(HealthIndex.date))
-            .first()
-        )
+        summary = []
+        for zone in zones:
+            # Get latest health index
+            latest_health = (
+                db.query(HealthIndex)
+                .filter(HealthIndex.zone_id == zone.id)
+                .order_by(desc(HealthIndex.date))
+                .first()
+            )
 
-        # Count active alerts
-        active_alerts = (
-            db.query(Alert)
-            .filter(Alert.zone_id == zone.id, Alert.resolved_at.is_(None))
-            .count()
-        )
+            # Count active alerts
+            active_alerts = (
+                db.query(Alert)
+                .filter(Alert.zone_id == zone.id, Alert.resolved_at.is_(None))
+                .count()
+            )
 
-        summary.append({
-            "zone_id": zone.id,
-            "zone_name": zone.name,
-            "area_hectares": float(zone.area_hectares),
-            "latest_health_score": latest_health.health_score if latest_health else None,
-            "latest_health_date": latest_health.date.isoformat() if latest_health else None,
-            "active_alerts": active_alerts
-        })
+            summary.append({
+                "zone_id": zone.id,
+                "zone_name": zone.name,
+                "area_hectares": float(zone.area_hectares),
+                "latest_health_score": latest_health.health_score if latest_health else None,
+                "latest_health_date": latest_health.date.isoformat() if latest_health else None,
+                "active_alerts": active_alerts
+            })
 
-    return {
-        "timestamp": datetime.utcnow().isoformat(),
-        "zones": summary
-    }
+        return {
+            "timestamp": datetime.utcnow().isoformat(),
+            "zones": summary
+        }
+    finally:
+        db.close()
 
 
 if __name__ == "__main__":
