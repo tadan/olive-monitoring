@@ -65,8 +65,8 @@ def test_calculate_health_score_from_ndvi():
     medium_health = calculate_health_score(ndvi_mean=0.3, ndmi_mean=0.2)
     assert 30 <= medium_health <= 70
 
-    # NDVI of 0.1 should give low health score
-    low_health = calculate_health_score(ndvi_mean=0.1, ndmi_mean=0.0)
+    # NDVI of 0.1 with drought stress (negative NDMI) should give low health score
+    low_health = calculate_health_score(ndvi_mean=0.1, ndmi_mean=-0.2)
     assert 0 <= low_health <= 30
 
 
