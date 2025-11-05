@@ -74,10 +74,12 @@ docker-compose ps
 Expected output:
 ```
 NAME                          STATUS    PORTS
-olive-monitoring-db           Up        0.0.0.0:5432->5432/tcp
+olive-monitoring-db           Up        (internal only)
 olive-monitoring-processor    Up
 olive-monitoring-api          Up        0.0.0.0:8000->8000/tcp
 ```
+
+**Note:** PostgreSQL is not exposed externally (no port mapping) for security and to avoid conflicts with existing PostgreSQL installations. It's only accessible within the Docker network.
 
 ### 7. Check Database Initialization
 
