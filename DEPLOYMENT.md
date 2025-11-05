@@ -76,10 +76,12 @@ Expected output:
 NAME                          STATUS    PORTS
 olive-monitoring-db           Up        (internal only)
 olive-monitoring-processor    Up
-olive-monitoring-api          Up        0.0.0.0:8000->8000/tcp
+olive-monitoring-api          Up        0.0.0.0:8001->8000/tcp
 ```
 
-**Note:** PostgreSQL is not exposed externally (no port mapping) for security and to avoid conflicts with existing PostgreSQL installations. It's only accessible within the Docker network.
+**Note:**
+- PostgreSQL is not exposed externally (no port mapping) for security and to avoid conflicts with existing PostgreSQL installations. It's only accessible within the Docker network.
+- API is mapped to port 8001 externally (to avoid conflicts with other services) but runs on port 8000 internally.
 
 ### 7. Check Database Initialization
 
@@ -117,14 +119,16 @@ Expected: All tests pass
 ### 9. Test API Access
 
 ```bash
-# Test from NAS
-curl http://localhost:8000/
+# Test from NAS (note: API runs on port 8001)
+curl http://localhost:8001/
 
 # Test via Cloudflare tunnel (from anywhere)
 curl https://your-cloudflare-url.com/
 ```
 
 Expected: FastAPI response (even if 404, means it's running)
+
+**Note:** The API is accessible on port 8001 (not 8000) to avoid conflicts with other services.
 
 ### 10. View Logs
 
@@ -324,7 +328,7 @@ processor:
 
 ## Security Considerations
 
-1. **Firewall:** Ensure only Cloudflare tunnel can access port 8000
+1. **Firewall:** Ensure only Cloudflare tunnel can access port 8001
 2. **Database:** PostgreSQL only accessible internally (not exposed outside Docker network)
 3. **Credentials:** Never commit `.env` file to git
 4. **Updates:** Regularly update Docker images for security patches
