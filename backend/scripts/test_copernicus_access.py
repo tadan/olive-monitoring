@@ -83,18 +83,22 @@ def test_api_connection():
 
     try:
         fetcher = SatelliteFetcher()
-        api = fetcher._get_api()
 
-        logger.info("✅ Successfully connected to Copernicus Data Space API")
-        logger.info(f"   API endpoint: https://catalogue.dataspace.copernicus.eu/resto")
+        # Test OAuth2 authentication
+        token = fetcher._get_access_token()
+
+        logger.info("✅ Successfully obtained OAuth2 access token")
+        logger.info(f"   Auth endpoint: {fetcher.AUTH_URL}")
+        logger.info(f"   Token expires at: {fetcher.token_expires_at.strftime('%Y-%m-%d %H:%M:%S')}")
         return True
 
     except Exception as e:
         logger.error(f"❌ Failed to connect to Copernicus API: {e}")
         logger.error("")
         logger.error("Common issues:")
-        logger.error("  - Invalid credentials")
+        logger.error("  - Invalid credentials (check username/password)")
         logger.error("  - Account not activated at https://dataspace.copernicus.eu")
+        logger.error("  - Email not verified - check your inbox")
         logger.error("  - Network connectivity issues")
         return False
 
