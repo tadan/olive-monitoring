@@ -127,7 +127,7 @@ class SatelliteDataProcessor:
         # Filter to only new products
         new_products = [
             p for p in products
-            if p['title'] not in existing_scenes
+            if p['name'] not in existing_scenes
         ]
 
         logger.info(
@@ -148,10 +148,10 @@ class SatelliteDataProcessor:
             Path to downloaded product, or None if failed
         """
         try:
-            logger.info(f"Downloading {product['title']}")
+            logger.info(f"Downloading {product['name']}")
 
             product_path = self.fetcher.download_product(
-                product_uuid=product['uuid'],
+                product_id=product['id'],
                 output_dir=self.data_dir / "raw"
             )
 
@@ -159,7 +159,7 @@ class SatelliteDataProcessor:
             return product_path
 
         except Exception as e:
-            logger.error(f"Failed to download {product['title']}: {e}", exc_info=True)
+            logger.error(f"Failed to download {product['name']}: {e}", exc_info=True)
             return None
 
     def register_product(self, db, product: dict, download_path: Path) -> SatelliteImage:
@@ -178,7 +178,7 @@ class SatelliteDataProcessor:
             acquisition_date=product['date'],
             satellite='Sentinel-2',
             cloud_coverage_percent=product['cloud_coverage'],
-            scene_id=product['title'],
+            scene_id=product['name'],
             download_path=str(download_path),
             processed=False
         )
@@ -187,7 +187,7 @@ class SatelliteDataProcessor:
         db.commit()
         db.refresh(satellite_image)
 
-        logger.info(f"Registered image {satellite_image.id}: {product['title']}")
+        logger.info(f"Registered image {satellite_image.id}: {product['name']}")
         return satellite_image
 
     def process_image(self, db, image: SatelliteImage) -> int:
@@ -349,7 +349,7 @@ class SatelliteDataProcessor:
                     # Download
                     download_path = self.download_product(product)
                     if download_path is None:
-                        stats['errors'].append(f"Failed to download: {product['title']}")
+                        stats['errors'].append(f"Failed to download: {product['name']}")
                         continue
 
                     stats['products_downloaded'] += 1
@@ -370,7 +370,7 @@ class SatelliteDataProcessor:
                         all_alerts.extend(alerts)
 
                 except Exception as e:
-                    error_msg = f"Error processing {product['title']}: {e}"
+                    error_msg = f"Error processing {product['name']}: {e}"
                     logger.error(error_msg, exc_info=True)
                     stats['errors'].append(error_msg)
 
