@@ -127,7 +127,7 @@ class ImageProcessor:
             if product_path.suffix == '.zip':
                 product_path = self.extract_product_path(product_path)
 
-            # Convert GeoJSON to shapely geometry
+            # Convert GeoJSON to shapely geometry (in EPSG:4326 - lat/lon)
             geom = shape(zone_geometry)
 
             bands = {}
@@ -140,8 +140,17 @@ class ImageProcessor:
 
                 # Read and clip band to zone
                 with rasterio.open(band_file) as src:
+                    # Transform zone geometry from lat/lon (EPSG:4326) to raster CRS
+                    from rasterio.warp import transform_geom
+                    geom_transformed = transform_geom(
+                        'EPSG:4326',  # Source: lat/lon
+                        src.crs,      # Target: raster's CRS (usually UTM)
+                        zone_geometry
+                    )
+                    geom_in_raster_crs = shape(geom_transformed)
+
                     # Clip to zone geometry
-                    out_image, out_transform = mask(src, [geom], crop=True, nodata=0)
+                    out_image, out_transform = mask(src, [geom_in_raster_crs], crop=True, nodata=0)
 
                     # Extract first band (imagery is often single-band per file)
                     band_data = out_image[0]

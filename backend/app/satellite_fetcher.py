@@ -107,12 +107,14 @@ class SatelliteFetcher:
 
         # Build OData filter
         # Collection: SENTINEL-2 (S2MSI2A is L2A processing level, S2MSI1C is L1C)
+        # Only get L2A products (atmospherically corrected, has proper band structure)
         filter_parts = [
             "Collection/Name eq 'SENTINEL-2'",
             f"OData.CSC.Intersects(area=geography'SRID=4326;{wkt}')",
             f"ContentDate/Start gt {start_str}",
             f"ContentDate/Start lt {end_str}",
-            f"Attributes/OData.CSC.DoubleAttribute/any(att:att/Name eq 'cloudCover' and att/OData.CSC.DoubleAttribute/Value lt {cloud_coverage_max})"
+            f"Attributes/OData.CSC.DoubleAttribute/any(att:att/Name eq 'cloudCover' and att/OData.CSC.DoubleAttribute/Value lt {cloud_coverage_max})",
+            "Attributes/OData.CSC.StringAttribute/any(att:att/Name eq 'productType' and att/OData.CSC.StringAttribute/Value eq 'S2MSI2A')"
         ]
 
         filter_query = " and ".join(filter_parts)
