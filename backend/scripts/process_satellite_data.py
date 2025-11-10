@@ -88,6 +88,21 @@ class SatelliteDataProcessor:
         # For better coverage, could use union of all zones
         zone = zones[0]
 
+        # FIX: Use Point geometry (zone centroid) instead of Polygon
+        # This ensures we only get tiles that contain the farm location,
+        # not adjacent tiles that merely intersect the search polygon
+        from shapely.geometry import shape
+        zone_shape = shape(zone.geometry)
+        centroid = zone_shape.centroid
+
+        # Create Point geometry for query
+        query_geometry = {
+            "type": "Point",
+            "coordinates": [centroid.x, centroid.y]
+        }
+
+        logger.info(f"Query location: {centroid.y:.4f}°N, {centroid.x:.4f}°E")
+
         # Calculate date range
         end_date = datetime.now().date()
         start_date = end_date - timedelta(days=self.days_back)
@@ -97,9 +112,9 @@ class SatelliteDataProcessor:
             f"(cloud coverage < {self.cloud_coverage_max}%)"
         )
 
-        # Query products
+        # Query products using Point geometry
         products = self.fetcher.query_products(
-            geometry=zone.geometry,
+            geometry=query_geometry,
             start_date=start_date,
             end_date=end_date,
             cloud_coverage_max=self.cloud_coverage_max

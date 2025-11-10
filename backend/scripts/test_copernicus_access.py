@@ -120,7 +120,18 @@ def test_query_products():
             return False
 
         logger.info(f"Using zone: {zone.name}")
-        logger.info(f"Location: ~42.303°N, 14.187°E (Abruzzo, Italy)")
+
+        # Use Point geometry (zone centroid) for accurate tile selection
+        from shapely.geometry import shape
+        zone_shape = shape(zone.geometry)
+        centroid = zone_shape.centroid
+
+        query_geometry = {
+            "type": "Point",
+            "coordinates": [centroid.x, centroid.y]
+        }
+
+        logger.info(f"Location: {centroid.y:.4f}°N, {centroid.x:.4f}°E (Abruzzo, Italy)")
 
         # Query last 30 days with relaxed cloud coverage
         end_date = datetime.now().date()
@@ -131,7 +142,7 @@ def test_query_products():
 
         fetcher = SatelliteFetcher()
         products = fetcher.query_products(
-            geometry=zone.geometry,
+            geometry=query_geometry,
             start_date=start_date,
             end_date=end_date,
             cloud_coverage_max=50  # Relaxed for testing
@@ -150,8 +161,13 @@ def test_query_products():
         logger.info("Most recent products:")
 
         for i, product in enumerate(products[:5], 1):
+            # Extract tile ID from product name (format: S2A_MSIL2A_...T33TVG...)
+            parts = product['name'].split('_')
+            tile_id = next((p for p in parts if p.startswith('T') and len(p) == 6), 'UNKNOWN')
+
             logger.info(
                 f"  {i}. {product['date']} - "
+                f"Tile: {tile_id} - "
                 f"Cloud: {product['cloud_coverage']:.1f}% - "
                 f"Size: {product['size_mb']} MB"
             )
