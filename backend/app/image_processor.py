@@ -115,12 +115,17 @@ class ImageProcessor:
         """
         Extract and clip required bands for a zone.
 
+        Handles different band resolutions by resampling all bands to 10m resolution:
+        - Red (B04): 10m native
+        - NIR (B08): 10m native
+        - SWIR (B11): 20m native → resampled to 10m
+
         Args:
             product_path: Path to Sentinel-2 product (.SAFE or .zip)
             zone_geometry: GeoJSON geometry defining the zone boundary
 
         Returns:
-            Dictionary with 'red', 'nir', 'swir' numpy arrays, or None if failed
+            Dictionary with 'red', 'nir', 'swir' numpy arrays (all same shape), or None if failed
         """
         try:
             # Extract if zipped
@@ -131,7 +136,13 @@ class ImageProcessor:
             geom = shape(zone_geometry)
 
             bands = {}
-            for band_key, band_name in self.BAND_MAPPING.items():
+            reference_shape = None
+            reference_transform = None
+            reference_crs = None
+
+            # First pass: extract Red and NIR (10m resolution)
+            for band_key in ['red', 'nir']:
+                band_name = self.BAND_MAPPING[band_key]
                 band_file = self.find_band_file(product_path, band_name)
 
                 if band_file is None:
@@ -161,7 +172,56 @@ class ImageProcessor:
 
                     bands[band_key] = band_data
 
-            logger.info(f"Extracted {len(bands)} bands for zone")
+                    # Use first band (Red) as reference for resampling
+                    if reference_shape is None:
+                        reference_shape = band_data.shape
+                        reference_transform = out_transform
+                        reference_crs = src.crs
+                        logger.debug(f"Reference shape from {band_key}: {reference_shape}")
+
+            # Second pass: extract and resample SWIR (20m → 10m)
+            band_key = 'swir'
+            band_name = self.BAND_MAPPING[band_key]
+            band_file = self.find_band_file(product_path, band_name)
+
+            if band_file is None:
+                logger.error(f"Missing {band_key} band ({band_name})")
+                return None
+
+            with rasterio.open(band_file) as src:
+                # Transform zone geometry
+                from rasterio.warp import transform_geom, reproject, Resampling
+                geom_transformed = transform_geom(
+                    'EPSG:4326',
+                    src.crs,
+                    zone_geometry
+                )
+                geom_in_raster_crs = shape(geom_transformed)
+
+                # Clip to zone geometry (at 20m resolution)
+                out_image, out_transform = mask(src, [geom_in_raster_crs], crop=True, nodata=0)
+                band_data_20m = out_image[0].astype(np.float32)
+
+                # Resample from 20m to 10m to match Red/NIR
+                band_data_10m = np.zeros(reference_shape, dtype=np.float32)
+
+                reproject(
+                    source=band_data_20m,
+                    destination=band_data_10m,
+                    src_transform=out_transform,
+                    src_crs=src.crs,
+                    dst_transform=reference_transform,
+                    dst_crs=reference_crs,
+                    resampling=Resampling.bilinear
+                )
+
+                # Convert nodata values to NaN
+                band_data_10m[band_data_10m == 0] = np.nan
+
+                bands[band_key] = band_data_10m
+                logger.debug(f"Resampled {band_key} from {band_data_20m.shape} to {band_data_10m.shape}")
+
+            logger.info(f"Extracted {len(bands)} bands for zone (all {reference_shape})")
             return bands
 
         except Exception as e:
