@@ -60,7 +60,7 @@ class SatelliteDataProcessor:
         """
         self.days_back = days_back
         self.cloud_coverage_max = cloud_coverage_max
-        self.send_notifications = send_notifications
+        self.enable_notifications = send_notifications  # Renamed to avoid method name conflict
 
         self.data_dir = Path(settings.data_dir)
         self.fetcher = SatelliteFetcher()
@@ -300,7 +300,7 @@ class SatelliteDataProcessor:
         Returns:
             Number of emails sent
         """
-        if not self.send_notifications or not alerts:
+        if not self.enable_notifications or not alerts:
             return 0
 
         logger.info(f"Sending notifications for {len(alerts)} alerts")
@@ -395,7 +395,7 @@ class SatelliteDataProcessor:
                 stats['baselines_updated'] = baselines_updated
 
             # Step 5: Send notifications
-            if all_alerts and self.send_notifications:
+            if all_alerts and self.enable_notifications:
                 import asyncio
                 notifications_sent = asyncio.run(self.send_notifications(all_alerts))
                 stats['notifications_sent'] = notifications_sent
