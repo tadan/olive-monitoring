@@ -1,0 +1,142 @@
+/**
+ * Time-series chart showing olive grove health metrics
+ */
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler,
+} from 'chart.js';
+import { format } from 'date-fns';
+import './HealthChart.css';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
+
+const HealthChart = ({ healthData }) => {
+  if (!healthData || healthData.length === 0) {
+    return (
+      <div className="health-chart-placeholder">
+        <p>No health data available</p>
+      </div>
+    );
+  }
+
+  // Sort by date ascending
+  const sortedData = [...healthData].sort((a, b) =>
+    new Date(a.date) - new Date(b.date)
+  );
+
+  const chartData = {
+    labels: sortedData.map(d => format(new Date(d.date), 'MMM dd')),
+    datasets: [
+      {
+        label: 'Health Score',
+        data: sortedData.map(d => d.health_score),
+        borderColor: '#22c55e',
+        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+        fill: true,
+        tension: 0.4,
+        yAxisID: 'y',
+      },
+      {
+        label: 'NDVI',
+        data: sortedData.map(d => d.ndvi_mean * 100), // Scale NDVI to 0-100
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        fill: true,
+        tension: 0.4,
+        yAxisID: 'y',
+      },
+      {
+        label: 'NDMI',
+        data: sortedData.map(d => d.ndmi_mean * 100), // Scale NDMI to 0-100
+        borderColor: '#8b5cf6',
+        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+        fill: true,
+        tension: 0.4,
+        yAxisID: 'y',
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+      mode: 'index',
+      intersect: false,
+    },
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Olive Grove Health Trends',
+        font: {
+          size: 16,
+          weight: 'bold',
+        },
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            let label = context.dataset.label || '';
+            if (label) {
+              label += ': ';
+            }
+            if (context.dataset.label === 'Health Score') {
+              label += context.parsed.y + '/100';
+            } else {
+              label += (context.parsed.y / 100).toFixed(3); // Show original scale
+            }
+            return label;
+          },
+        },
+      },
+    },
+    scales: {
+      y: {
+        type: 'linear',
+        display: true,
+        position: 'left',
+        min: 0,
+        max: 100,
+        title: {
+          display: true,
+          text: 'Value (0-100)',
+        },
+      },
+      x: {
+        ticks: {
+          maxRotation: 45,
+          minRotation: 45,
+        },
+      },
+    },
+  };
+
+  return (
+    <div className="health-chart-container">
+      <Line data={chartData} options={options} />
+    </div>
+  );
+};
+
+export default HealthChart;

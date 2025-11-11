@@ -1,0 +1,44 @@
+.farm-map-container {
+  height: 500px;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.farm-map-placeholder {
+  height: 500px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  border-radius: 8px;
+  color: #6b7280;
+}
+
+.zone-popup {
+  min-width: 200px;
+}
+
+.zone-popup h3 {
+  margin: 0 0 10px 0;
+  color: #1f2937;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.zone-popup p {
+  margin: 5px 0;
+  font-size: 14px;
+  color: #4b5563;
+}
+
+.alert-badge {
+  margin-top: 8px;
+  padding: 4px 8px;
+  background: #fef3c7;
+  border-left: 3px solid #f59e0b;
+  border-radius: 4px;
+  font-weight: 500;
+}
