@@ -9,7 +9,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.database import get_db
 from app.models import FieldZone, SatelliteImage, HealthIndex
-from scripts.process_satellite_data import SatelliteDataProcessor
 
 def get_health_data_for_month(db, year: int, month: int):
     """Get health indices for a specific month."""
@@ -26,32 +25,149 @@ def get_health_data_for_month(db, year: int, month: int):
 
     return health_data
 
-def process_month(year: int, month: int, days_range: int = 31):
-    """Process satellite data for a specific month."""
+def process_month(year: int, month: int):
+    """Process satellite data for a specific month only."""
     print(f"\n{'='*60}")
     print(f"PROCESSING: {year}-{month:02d}")
     print(f"{'='*60}")
 
-    # Calculate days back from today to target date
-    target_date = date(year, month, 15)  # Mid-month
-    today = date.today()
-    days_back = (today - target_date).days
+    from datetime import timedelta
 
-    print(f"Target date: {target_date}")
-    print(f"Days back from today: {days_back}")
+    # Query only this specific month
+    start_date = date(year, month, 1)
+    # Last day of month
+    if month == 12:
+        end_date = date(year, 12, 31)
+    else:
+        end_date = date(year, month + 1, 1) - timedelta(days=1)
 
-    # Run processor
-    processor = SatelliteDataProcessor(
-        days_back=days_back + days_range,  # Add range to capture the month
-        cloud_coverage_max=20,  # Strict for best quality
-        send_notifications=False
+    print(f"Date range: {start_date} to {end_date}")
+
+    # Get all zones
+    db = next(get_db())
+    zones = db.query(FieldZone).all()
+
+    if not zones:
+        print("❌ No zones found")
+        return None
+
+    # Use Point geometry (zone centroid) like main processor
+    from shapely.geometry import shape
+    zone_shape = shape(zones[0].geometry)
+    centroid = zone_shape.centroid
+
+    query_geometry = {
+        "type": "Point",
+        "coordinates": [centroid.x, centroid.y]
+    }
+
+    # Query products for this month only
+    from app.satellite_fetcher import SatelliteFetcher
+    from app.image_processor import ImageProcessor
+
+    fetcher = SatelliteFetcher()
+
+    print(f"Querying products...")
+    products = fetcher.query_products(
+        geometry=query_geometry,
+        start_date=start_date,
+        end_date=end_date,
+        cloud_coverage_max=20  # Strict for best quality
     )
 
-    stats = processor.run()
+    print(f"Found {len(products)} products for {year}-{month:02d}")
 
-    print(f"\nProcessing complete:")
+    if not products:
+        print("⚠️  No products found for this month")
+        return None
+
+    # Filter out already processed
+    from app.models import SatelliteImage
+    existing_scenes = set(
+        row[0] for row in db.query(SatelliteImage.scene_id).all()
+    )
+    new_products = [p for p in products if p['name'] not in existing_scenes]
+
+    print(f"New products to download: {len(new_products)}")
+
+    if not new_products:
+        print("✅ All products already processed")
+        db.close()
+        return {'products_downloaded': 0, 'zones_processed': 0}
+
+    # Download and process each product
+    processor = ImageProcessor()
+    stats = {
+        'products_downloaded': 0,
+        'zones_processed': 0
+    }
+
+    for i, product in enumerate(new_products, 1):
+        print(f"\n[{i}/{len(new_products)}] {product['name']}")
+        print(f"  Date: {product['date']}, Cloud: {product['cloud_coverage']:.1f}%")
+
+        try:
+            # Download with retry
+            max_retries = 3
+            download_path = None
+
+            for attempt in range(max_retries):
+                try:
+                    print(f"  Downloading (attempt {attempt + 1}/{max_retries})...")
+                    download_path = fetcher.download_product(
+                        product_id=product['id'],
+                        output_dir=Path('/app/data/raw')
+                    )
+                    break
+                except Exception as e:
+                    if attempt < max_retries - 1:
+                        print(f"  ⚠️  Download failed: {e}")
+                        print(f"  Retrying in 10 seconds...")
+                        import time
+                        time.sleep(10)
+                    else:
+                        print(f"  ❌ Download failed after {max_retries} attempts")
+                        raise
+
+            if not download_path:
+                continue
+
+            stats['products_downloaded'] += 1
+
+            # Register in database
+            satellite_image = SatelliteImage(
+                acquisition_date=product['date'],
+                satellite='Sentinel-2',
+                cloud_coverage_percent=product['cloud_coverage'],
+                scene_id=product['name'],
+                download_path=str(download_path),
+                processed=False
+            )
+            db.add(satellite_image)
+            db.commit()
+            db.refresh(satellite_image)
+
+            # Process all zones
+            zones_processed = processor.process_all_zones(
+                db=db,
+                image_id=satellite_image.id,
+                product_path=download_path
+            )
+
+            stats['zones_processed'] += zones_processed
+            print(f"  ✅ Processed {zones_processed}/3 zones")
+
+        except Exception as e:
+            print(f"  ❌ Error: {e}")
+            continue
+
+    db.close()
+
+    print(f"\n{'='*60}")
+    print(f"COMPLETED: {year}-{month:02d}")
     print(f"  Products downloaded: {stats['products_downloaded']}")
     print(f"  Zones processed: {stats['zones_processed']}")
+    print(f"{'='*60}")
 
     return stats
 
