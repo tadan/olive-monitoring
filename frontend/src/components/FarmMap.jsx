@@ -17,19 +17,8 @@ const getHealthColor = (score) => {
 const FarmMap = ({ zones, healthData }) => {
   const [map, setMap] = useState(null);
 
-  useEffect(() => {
-    if (map && zones && zones.length > 0) {
-      // Fit bounds to show all zones
-      const bounds = zones.map(zone => {
-        const coords = zone.geometry.coordinates[0];
-        return coords.map(([lng, lat]) => [lat, lng]);
-      }).flat();
-
-      if (bounds.length > 0) {
-        map.fitBounds(bounds);
-      }
-    }
-  }, [map, zones]);
+  // Abruzzo region center coordinates (for privacy)
+  const abruzzoCenter = [42.35, 13.39]; // [lat, lng]
 
   if (!zones || zones.length === 0) {
     return (
@@ -39,16 +28,11 @@ const FarmMap = ({ zones, healthData }) => {
     );
   }
 
-  // Get farm center from first zone
-  const firstZone = zones[0];
-  const firstCoord = firstZone.geometry.coordinates[0][0];
-  const center = [firstCoord[1], firstCoord[0]]; // [lat, lng]
-
   return (
     <div className="farm-map-container">
       <MapContainer
-        center={center}
-        zoom={15}
+        center={abruzzoCenter}
+        zoom={9}
         style={{ height: '100%', width: '100%' }}
         whenCreated={setMap}
       >
