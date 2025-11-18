@@ -51,9 +51,9 @@ const FarmMap = ({ zones, healthData }) => {
               data={zone.geometry}
               style={{
                 fillColor: getHealthColor(healthScore),
-                fillOpacity: 0.4,
+                fillOpacity: 0.7,
                 color: getHealthColor(healthScore),
-                weight: 2,
+                weight: 4,
               }}
             >
               <Popup>
