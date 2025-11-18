@@ -1,9 +1,10 @@
 # Olive Farm Satellite Monitoring - Claude Code Context
 
 **Project:** Satellite-based monitoring system for Tatasciore Olive Farm (Abruzzo, Italy)
-**Status:** Phase 1 Complete ✅ | Phase 2 Pending ⏳
-**Last Updated:** 2025-11-05
+**Status:** Phase 1 Complete ✅ | Phase 2 Complete ✅ | Phase 3 Complete ✅
+**Last Updated:** 2025-11-17
 **Location:** /Users/danieletatasciore/Documents/repos/claude/olive-monitoring
+**Live Dashboard:** https://farms.daniele.is
 
 ---
 
@@ -28,10 +29,11 @@ A self-hosted satellite monitoring portal that automatically tracks olive grove 
 
 ### Infrastructure (Running on Synology NAS in Sweden)
 
-**Docker Containers (3):**
+**Docker Containers (4):**
 - `olive-monitoring-db` - PostgreSQL 15 (port 5432 internal only)
 - `olive-monitoring-processor` - Python 3.11 + GDAL for satellite processing
-- `olive-monitoring-api` - FastAPI REST API (port 8001)
+- `olive-monitoring-api` - FastAPI REST API (internal only)
+- `olive-monitoring-dashboard` - nginx serving React frontend (port 8080 → Cloudflare Tunnel)
 
 **Database Schema (6 tables):**
 - `field_zones` - Olive grove boundaries (GeoJSON)
@@ -51,7 +53,13 @@ A self-hosted satellite monitoring portal that automatically tracks olive grove 
 - rasterio + GDAL (geospatial processing)
 - numpy, scipy, scikit-learn (analysis)
 
-**Frontend:** Not yet implemented (Phase 3)
+**Frontend:**
+- React 18 + Vite
+- Leaflet (interactive maps)
+- Chart.js (time-series visualization)
+- Tailwind CSS (styling)
+- Deployed via nginx reverse proxy
+- Publicly accessible via Cloudflare Tunnel
 
 **Data Source:** Copernicus Sentinel-2 satellites (free, 10m resolution, 5-day revisit)
 
@@ -92,52 +100,189 @@ A self-hosted satellite monitoring portal that automatically tracks olive grove 
 - `README.md` - Project documentation
 - `DEPLOYMENT.md` - Comprehensive deployment guide
 
-### ⏳ Phase 2: Analysis Engine (NOT STARTED)
+### ✅ Phase 2: Analysis Engine (COMPLETE)
 
-**Missing Components:**
+**Completed Components:**
 1. `backend/app/image_processor.py` - Sentinel-2 band extraction and processing
 2. `backend/app/alerts.py` - Anomaly detection and alert generation
-3. `backend/app/baseline.py` - Seasonal baseline calculation
-4. `backend/scripts/process_satellite_data.py` - Main processing orchestration
+3. `backend/scripts/process_satellite_data.py` - Main processing orchestration
+4. Band resolution resampling (SWIR 20m → 10m)
+5. Historical data comparison capability
+6. NDVI/NDMI calculation and storage
 
-### ❌ Phase 3: Dashboard (NOT STARTED)
+**Key Features:**
+- Automatic tile selection using zone centroids
+- Multi-band processing with resolution normalization
+- Health score calculation (0-100)
+- Alert generation based on thresholds
+- Historical comparison (e.g., July 2015 vs July 2025)
 
-**Missing Components:**
-1. React application setup
-2. Interactive map with Leaflet
-3. Time-series charts with Chart.js
-4. Alert viewer interface
-5. Farm story page
+### ✅ Phase 3: Dashboard (COMPLETE)
+
+**Completed Components:**
+1. React 18 + Vite application setup
+2. Interactive Leaflet map with zone overlays (color-coded by health)
+3. Chart.js time-series health charts (NDVI, NDMI, Health Score)
+4. Alert viewer interface with severity badges
+5. Responsive dashboard layout
+6. nginx reverse proxy for API routing
+7. Cloudflare Tunnel integration for public access
+
+**Files Created:**
+- `frontend/src/components/Dashboard.jsx` - Main dashboard component
+- `frontend/src/components/FarmMap.jsx` - Leaflet map with zone visualization
+- `frontend/src/components/HealthChart.jsx` - Chart.js time-series visualization
+- `frontend/src/components/AlertViewer.jsx` - Alert display component
+- `frontend/src/services/api.js` - API client with relative URL support
+- `docker/nginx.conf` - nginx reverse proxy configuration
+- `frontend/.env.production` - Production environment configuration
 
 ---
 
-## API Endpoints (Port 8001)
+## API Endpoints
 
-### Working Endpoints ✅
+### Public Access (via nginx reverse proxy)
 
 ```bash
-GET /                              # Service info
-GET /health                        # Health check + DB connectivity
-GET /api/zones                     # List all field zones
-GET /api/zones/{zone_id}          # Get specific zone details
-GET /api/zones/{zone_id}/health    # Zone health history (empty until processing)
-GET /api/zones/{zone_id}/alerts    # Zone alerts (empty until processing)
-GET /api/dashboard/summary         # Dashboard summary with all zones
+GET https://farms.daniele.is/              # Dashboard UI
+GET https://farms.daniele.is/health        # Health check
+GET https://farms.daniele.is/api/zones     # List all field zones
+GET https://farms.daniele.is/api/zones/{zone_id}          # Get specific zone details
+GET https://farms.daniele.is/api/zones/{zone_id}/health   # Zone health history
+GET https://farms.daniele.is/api/zones/{zone_id}/alerts   # Zone alerts
+GET https://farms.daniele.is/api/dashboard/summary        # Dashboard summary
 ```
 
-### Testing Commands
+### Internal Access (NAS only)
 
 ```bash
 # On NAS via SSH
-curl http://localhost:8001/health
-curl http://localhost:8001/api/zones
-curl http://localhost:8001/api/zones/5
-curl http://localhost:8001/api/dashboard/summary
+curl http://localhost:8080/health                    # Through nginx
+curl http://localhost:8080/api/zones                 # Through nginx
+curl http://localhost:8000/health                    # Direct to API (internal network only)
 ```
+
+### Architecture Notes
+
+- nginx (port 8080) serves React frontend and proxies `/api/*` requests to FastAPI backend
+- FastAPI backend (port 8000) is internal only, not exposed externally
+- Cloudflare Tunnel exposes nginx on port 8080 as https://farms.daniele.is
+- Database (port 5432) is internal only, no external access
 
 ---
 
 ## Recent Sessions
+
+### Session 2025-11-17: Dashboard Update Issue & Privacy Enhancement
+
+**Accomplishments:**
+1. ✅ Diagnosed Task Scheduler failure (status 127 - command not found)
+2. ✅ Identified root cause: docker-compose not in PATH for Synology Task Scheduler
+3. ✅ Provided solution: use full path `/usr/local/bin/docker-compose` in scheduled task
+4. ✅ Manually processed 3 new satellite images (Nov 12, 14, 15 - 3.1 GB total)
+5. ✅ Dashboard updated with fresh data - 10 new alerts generated
+6. ✅ Enhanced privacy: changed map to show Abruzzo region instead of farm location
+7. ✅ Committed and pushed map privacy changes to GitHub
+
+**Issues Resolved:**
+
+1. **Task Scheduler Status 127 Error:**
+   - Problem: Synology Task Scheduler job failed immediately with "command not found"
+   - Root Cause: `docker-compose` not in PATH when Task Scheduler runs (minimal environment)
+   - Solution: Use full path `/usr/local/bin/docker-compose` in scheduled task script
+   - Files: Synology Task Scheduler configuration (updated by user on NAS)
+
+2. **Dashboard Privacy Enhancement:**
+   - Problem: Map displayed exact farm location with visible landmarks
+   - Solution: Changed map center to Abruzzo region (42.35°N, 13.39°E) with zoom level 9
+   - Files: `frontend/src/components/FarmMap.jsx`
+
+**Processing Results:**
+- Products found: 4 (1 already processed, 3 new)
+- Downloaded: 3 new Sentinel-2 images (~3.1 GB)
+- Zones processed: 9 (3 zones × 3 images)
+- Alerts generated: 10 new alerts
+- Baselines updated: 12
+- Duration: 6 minutes 18 seconds
+
+**Current Grove Health Status (as of 2025-11-15):**
+- Zone 2 (Below Natural): 58/100 - Warning (Waterlogging alert, NDMI: 0.563)
+- Zone 3 (Below Falling Houses): 57/100 - Warning (Low health)
+- Zone 4 (House): 50/100 - Warning (Low health)
+
+**Files Modified:**
+- `frontend/src/components/FarmMap.jsx` - Changed map to regional view for privacy
+- `SESSION-2025-11-17.md` - Created comprehensive session log
+- `Claude.md` - Updated with this session
+
+**Next Steps:**
+- User to update Synology Task Scheduler with corrected script (full path to docker-compose)
+- User to deploy updated frontend with privacy-enhanced map to NAS
+- Verify automated processing runs successfully on next scheduled execution
+
+### Session 2025-11-11: Phase 2 & 3 Complete - Dashboard Live! 🎉
+
+**Accomplishments:**
+1. ✅ Fixed tile selection issue (Polygon → Point geometry using zone centroid)
+2. ✅ Fixed band resolution mismatch (resampled SWIR 20m → 10m)
+3. ✅ Implemented satellite data processing pipeline
+4. ✅ Built complete React dashboard with Leaflet maps and Chart.js
+5. ✅ Deployed frontend with nginx reverse proxy
+6. ✅ Configured Cloudflare Tunnel for public access
+7. ✅ Fixed database password authentication issue
+8. ✅ **Dashboard is now live at https://farms.daniele.is**
+
+**Issues Resolved:**
+
+1. **Tile Selection Error:**
+   - Problem: Polygon geometry with Intersects operator returned wrong tile (T33TVG instead of correct tile)
+   - Root Cause: Adjacent tiles were matching the query
+   - Solution: Changed to Point geometry using zone centroid (frontend/src/components/FarmMap.jsx:712)
+   - Files: `backend/scripts/process_satellite_data.py`, `backend/scripts/test_copernicus_access.py`
+
+2. **Band Resolution Mismatch:**
+   - Problem: `operands could not be broadcast together with shapes (21,13) (11,7)`
+   - Root Cause: SWIR band at 20m resolution, Red/NIR at 10m resolution
+   - Solution: Resampled SWIR band to 10m using rasterio.warp.reproject with bilinear interpolation
+   - Files: `backend/app/image_processor.py:110-229`
+
+3. **Frontend API Connection:**
+   - Problem: Production build was using localhost:8001 instead of relative URLs
+   - Root Cause: JavaScript `||` operator treats empty string as falsy
+   - Solution: Changed to explicit `undefined` check in API client
+   - Files: `frontend/src/services/api.js:7-10`
+
+4. **Database Authentication:**
+   - Problem: Password authentication failed, API returning 500 errors
+   - Root Cause: Database password contained special characters (`&`, `@`) that broke connection URL parsing
+   - Solution: Changed to password without special URL characters
+   - Files: `.env` on NAS
+
+**Key Decisions:**
+- Used nginx reverse proxy to eliminate CORS issues and simplify deployment
+- Frontend uses relative URLs in production (empty VITE_API_URL)
+- Cloudflare Tunnel points to nginx on port 8080 (not directly to API)
+- All database ports kept internal for security
+
+**Architecture Changes:**
+- Added `olive-monitoring-dashboard` container (nginx:alpine)
+- Created `docker/nginx.conf` for frontend serving and API proxying
+- Removed direct API port exposure (8001) - nginx handles all traffic
+- API now runs on internal port 8000, only accessible via nginx proxy
+
+**Files Modified:**
+- `backend/scripts/process_satellite_data.py` - Fixed tile selection, notification naming
+- `backend/app/image_processor.py` - Added SWIR band resampling
+- `frontend/src/services/api.js` - Fixed API URL fallback logic
+- `docker-compose.yml` - Added dashboard service, updated API port
+- `docker/nginx.conf` - Created nginx reverse proxy configuration
+- `/volume1/docker/cloudflared/config.yml` - Added farms.daniele.is hostname
+
+**Database Status:**
+- ✅ 3 zones loaded (IDs: 5, 6, 7)
+- ✅ Historical health data processed (July 2015 comparison complete)
+- ✅ Dashboard displaying real satellite data
+- ✅ Publicly accessible at https://farms.daniele.is
 
 ### Session 2025-11-05: API Testing & KML Integration
 
@@ -172,58 +317,42 @@ curl http://localhost:8001/api/dashboard/summary
 
 ## Next Steps
 
-### Immediate (Ready to Deploy)
+### Operations & Maintenance
 
-1. **Deploy updated API to NAS:**
-   ```bash
-   # Copy updated main.py to NAS
-   scp backend/app/main.py daniele@NAS_Irisgatan:/volume1/docker/olive-monitoring/backend/app/
+1. **Automated Processing Schedule:**
+   - Set up cron job to run satellite processing every 5 days
+   - Monitor processing logs for errors
+   - Verify data is being updated regularly
 
-   # Restart API container
-   ssh daniele@NAS_Irisgatan
-   cd /volume1/docker/olive-monitoring
-   docker-compose restart api
+2. **Monitoring & Alerts:**
+   - Configure email alerts for health threshold violations
+   - Set up monitoring for Docker container health
+   - Create backup schedule for PostgreSQL database
 
-   # Test new endpoint
-   curl http://localhost:8001/api/zones/5
-   ```
+3. **Content Enhancement:**
+   - Add farm story page to dashboard (About section)
+   - Document olive varieties and farming practices
+   - Add seasonal calendar for Swedish customers
 
-2. **Test Copernicus access:**
-   - Verify Copernicus Data Space credentials in .env
-   - Test querying Sentinel-2 data for farm coordinates
-   - Check available imagery dates
+### Future Enhancements
 
-### Phase 2 Implementation (Next Major Task)
+**Short-term:**
+- Add data export functionality (CSV download)
+- Implement date range selector for historical data
+- Add comparison view (year-over-year)
+- Create mobile-responsive design improvements
 
-**Task 9: Satellite Image Processor** (Week 3)
-- Create `backend/app/image_processor.py`
-- Extract Red, NIR, SWIR bands from Sentinel-2 products
-- Calculate NDVI/NDMI for each zone
-- Store results in database
+**Medium-term:**
+- Implement baseline statistics for anomaly detection
+- Add predictive analytics for harvest timing
+- Create automated email reports for significant changes
+- Add weather data integration (temperature, rainfall)
 
-**Task 10: Alert Detection System** (Week 3)
-- Create `backend/app/alerts.py`
-- Implement threshold-based alerts (NDVI drop, NDMI drought)
-- Generate email notifications
-- Store alerts in database
-
-**Task 11: Baseline Statistics** (Week 3)
-- Create `backend/app/baseline.py`
-- Calculate seasonal baselines from historical data
-- Enable anomaly detection
-
-**Task 12: Main Processing Script** (Week 4)
-- Create `backend/scripts/process_satellite_data.py`
-- Orchestrate: query → download → process → analyze → alert
-- Schedule to run every 5 days
-
-### Phase 3 Dashboard (Weeks 5-6)
-
-- Initialize React application
-- Create Leaflet map component with zone overlays
-- Create Chart.js time-series health charts
-- Build alert viewer interface
-- Add farm story page for customer transparency
+**Long-term:**
+- Multi-farm support (if expanding to other locations)
+- Machine learning for pest/disease detection
+- Integration with farm management system
+- Public API for data access
 
 ---
 
@@ -233,7 +362,9 @@ curl http://localhost:8001/api/dashboard/summary
 
 ```bash
 # Database
-DB_PASSWORD=your_secure_password
+# IMPORTANT: Avoid special characters (@, &, :, /, ?, #, [, ]) in password
+# These characters break PostgreSQL connection URL parsing
+DB_PASSWORD=YourSecurePassword2025
 
 # Copernicus Data Space
 COPERNICUS_USERNAME=your_copernicus_username
@@ -246,6 +377,12 @@ SMTP_USERNAME=your_email@gmail.com
 SMTP_PASSWORD=your_app_password
 ALERT_EMAIL=your_email@gmail.com
 ```
+
+**Security Notes:**
+- Database password must not contain URL-special characters
+- Never commit `.env` file to git (already in `.gitignore`)
+- Store Copernicus credentials securely
+- Use app-specific password for Gmail SMTP
 
 ### Field Zones (backend/config/field_zones.json)
 
@@ -260,12 +397,19 @@ Contains 3 real olive grove zones with GeoJSON polygons and calculated areas.
 ```bash
 cd /Users/danieletatasciore/Documents/repos/claude/olive-monitoring
 
-# Parse KML file
-python3 backend/scripts/parse_kml_zones.py
+# Frontend development
+cd frontend
+npm install
+npm run dev              # Start dev server (http://localhost:5173)
+npm run build            # Build for production
 
-# Run tests
+# Backend development
 cd backend
-python3 -m pytest tests/ -v
+python3 -m pytest tests/ -v          # Run tests
+python3 backend/scripts/parse_kml_zones.py   # Parse KML file
+
+# Deploy frontend to NAS
+rsync -av frontend/dist/ daniele@192.168.1.112:/volume1/docker/olive-monitoring/frontend/dist/
 ```
 
 ### NAS Management (via SSH)
@@ -278,21 +422,48 @@ ssh daniele@NAS_Irisgatan
 cd /volume1/docker/olive-monitoring
 
 # Container management
-docker-compose ps                    # Check status
-docker-compose logs api              # View API logs
-docker-compose logs processor        # View processor logs
-docker-compose restart api           # Restart API
-docker-compose up -d                 # Start all containers
+docker-compose ps                              # Check status
+docker-compose logs dashboard                  # View nginx logs
+docker-compose logs api                        # View API logs
+docker-compose logs processor                  # View processor logs
+docker-compose restart dashboard               # Restart nginx
+docker-compose restart api                     # Restart API
+docker-compose down && docker-compose up -d    # Recreate all containers
 
-# Load field zones into database
+# Database operations
+docker-compose exec -T processor python scripts/load_field_zones.py    # Load zones
+docker-compose exec postgres psql -U olive_user -d olive_monitoring    # Database shell
+
+# Test endpoints
+curl http://localhost:8080/health              # Test through nginx
+curl http://localhost:8080/api/zones           # Test API through nginx
+curl https://farms.daniele.is/health           # Test public endpoint
+
+# Process satellite data
+docker-compose exec processor python scripts/process_satellite_data.py
+
+# Database reset (if needed)
+docker-compose down
+docker volume rm olive-monitoring_postgres-data
+# Edit .env to set new DB_PASSWORD
+docker-compose up -d
 docker-compose exec -T processor python scripts/load_field_zones.py
+```
 
-# Database access
-docker-compose exec postgres psql -U olive_user -d olive_monitoring
+### Cloudflare Tunnel Management
 
-# Test API
-curl http://localhost:8001/health
-curl http://localhost:8001/api/zones
+```bash
+# Check tunnel status
+sudo systemctl status cloudflared
+
+# View tunnel logs
+sudo journalctl -u cloudflared -n 50 --no-pager
+
+# Restart tunnel
+sudo systemctl restart cloudflared
+
+# Edit tunnel configuration (MUST use spaces, NOT tabs)
+sudo nano /volume1/docker/cloudflared/config.yml
 ```
 
 ---

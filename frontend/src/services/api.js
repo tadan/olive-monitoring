@@ -4,7 +4,10 @@
 import axios from 'axios';
 
 // API base URL - configure based on environment
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8001';
+// Empty string means use relative URLs (same origin)
+const API_BASE_URL = import.meta.env.VITE_API_URL !== undefined
+  ? import.meta.env.VITE_API_URL
+  : 'http://localhost:8001';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

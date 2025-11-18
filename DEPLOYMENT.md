@@ -4,10 +4,20 @@
 
 - ✅ Synology DS716+II NAS with 8GB RAM (in Sweden)
 - ✅ Docker and Docker Compose installed on NAS
-- ✅ Cloudflare tunnel configured
+- ✅ Cloudflare tunnel configured (`cloudflared` systemd service)
 - ✅ Copernicus Data Space account (username: work@daniele.is)
 - ✅ Olive grove boundaries defined (3 zones in Abruzzo, Italy)
-- ✅ `.env` file configured with credentials
+- ✅ `.env` file configured with credentials (see password requirements below)
+- ✅ Node.js and npm installed locally (for frontend development)
+
+## Important: Database Password Requirements
+
+**CRITICAL:** The database password in `.env` must not contain URL-special characters:
+- ❌ Avoid: `@`, `&`, `:`, `/`, `?`, `#`, `[`, `]`
+- ✅ Use: Letters, numbers, underscores, hyphens
+- Example: `OliveMonitoring2025` or `Secure_Password_2025`
+
+**Why:** These characters break PostgreSQL connection URL parsing and cause authentication failures.
 
 ## Deployment Steps
 
@@ -60,10 +70,11 @@ Expected output:
 docker-compose up -d
 ```
 
-Expected: All 3 containers start successfully
+Expected: All 4 containers start successfully
 - `olive-monitoring-db` (PostgreSQL)
 - `olive-monitoring-processor` (Python satellite processor)
 - `olive-monitoring-api` (FastAPI backend)
+- `olive-monitoring-dashboard` (nginx serving React frontend)
 
 ### 6. Verify Containers
 
@@ -76,12 +87,16 @@ Expected output:
 NAME                          STATUS    PORTS
 olive-monitoring-db           Up        (internal only)
 olive-monitoring-processor    Up
-olive-monitoring-api          Up        0.0.0.0:8001->8000/tcp
+olive-monitoring-api          Up        8000/tcp (internal only)
+olive-monitoring-dashboard    Up        0.0.0.0:8080->80/tcp
 ```
 
-**Note:**
-- PostgreSQL is not exposed externally (no port mapping) for security and to avoid conflicts with existing PostgreSQL installations. It's only accessible within the Docker network.
-- API is mapped to port 8001 externally (to avoid conflicts with other services) but runs on port 8000 internally.
+**Architecture Notes:**
+- PostgreSQL (port 5432) is internal only - no external access
+- API (port 8000) is internal only - accessed via nginx proxy
+- nginx (port 8080) serves frontend and proxies `/api/*` to backend
+- Cloudflare Tunnel exposes nginx port 8080 as https://farms.daniele.is
+- All external traffic goes through nginx → API is never directly exposed
 
 ### 7. Check Database Initialization
 
@@ -116,21 +131,80 @@ Expected: All tests pass
 
 **Total: 18 tests should pass**
 
-### 9. Test API Access
+### 9. Build and Deploy Frontend
+
+The frontend must be built locally and deployed to the NAS:
 
 ```bash
-# Test from NAS (note: API runs on port 8001)
-curl http://localhost:8001/
+# On your local machine
+cd /Users/danieletatasciore/Documents/repos/claude/olive-monitoring/frontend
 
-# Test via Cloudflare tunnel (from anywhere)
-curl https://your-cloudflare-url.com/
+# Install dependencies (first time only)
+npm install
+
+# Build for production
+npm run build
+
+# Deploy to NAS
+rsync -av dist/ daniele@192.168.1.112:/volume1/docker/olive-monitoring/frontend/dist/
+
+# Restart dashboard container on NAS
+ssh daniele@192.168.1.112
+cd /volume1/docker/olive-monitoring
+docker-compose restart dashboard
 ```
 
-Expected: FastAPI response (even if 404, means it's running)
+Expected: `dist/` folder copied to NAS, nginx serving React app
 
-**Note:** The API is accessible on port 8001 (not 8000) to avoid conflicts with other services.
+### 10. Configure Cloudflare Tunnel
 
-### 10. View Logs
+Edit the Cloudflare tunnel configuration on your NAS:
+
+```bash
+# SSH into NAS
+ssh daniele@192.168.1.112
+
+# Edit tunnel config (MUST use spaces, NOT tabs!)
+sudo nano /volume1/docker/cloudflared/config.yml
+```
+
+Add your hostname:
+```yaml
+ingress:
+  - hostname: "farms.daniele.is"
+    service: "http://localhost:8080"
+    originRequest:
+      noTLSVerify: true
+  - service: "http_status:404"
+```
+
+**IMPORTANT:** YAML requires spaces for indentation, never tabs. Use 2 spaces per level.
+
+Restart the tunnel:
+```bash
+sudo systemctl restart cloudflared
+sudo systemctl status cloudflared
+```
+
+Expected: Service running without errors, farms.daniele.is accessible
+
+### 11. Test API Access
+
+```bash
+# Test nginx (internal)
+curl http://localhost:8080/health
+
+# Test API through nginx (internal)
+curl http://localhost:8080/api/zones
+
+# Test via Cloudflare tunnel (from anywhere)
+curl https://farms.daniele.is/health
+curl https://farms.daniele.is/api/zones
+```
+
+Expected: JSON responses from all endpoints
+
+### 12. View Logs
 
 ```bash
 # View all logs
@@ -146,6 +220,75 @@ docker-compose logs postgres
 ```
 
 ## Troubleshooting
+
+### Database Password Authentication Fails
+
+**Symptom:** API returns 500 errors, logs show `password authentication failed for user "olive_user"`
+
+**Common Causes:**
+1. Password contains URL-special characters (`@`, `&`, `:`, etc.)
+2. Password mismatch between `.env` and database
+
+**Solution:**
+```bash
+# Stop containers
+docker-compose down
+
+# Remove database volume
+docker volume rm olive-monitoring_postgres-data
+
+# Edit .env with password containing NO special characters
+nano .env
+
+# Start fresh
+docker-compose up -d
+
+# Reload field zones
+docker-compose exec -T processor python scripts/load_field_zones.py
+```
+
+### Frontend Shows "localhost:8001" Errors
+
+**Symptom:** Browser console shows connection refused to localhost:8001
+
+**Cause:** Frontend was built with wrong environment configuration
+
+**Solution:**
+```bash
+# Verify .env.production has empty VITE_API_URL
+cat frontend/.env.production
+# Should show: VITE_API_URL=
+
+# Rebuild frontend
+cd frontend
+npm run build
+
+# Redeploy
+rsync -av dist/ daniele@192.168.1.112:/volume1/docker/olive-monitoring/frontend/dist/
+ssh daniele@192.168.1.112 "cd /volume1/docker/olive-monitoring && docker-compose restart dashboard"
+```
+
+### Cloudflare Tunnel YAML Parsing Error
+
+**Symptom:** `found a tab character that violates indentation`
+
+**Cause:** YAML file contains tab characters instead of spaces
+
+**Solution:**
+```bash
+# SSH into NAS
+ssh daniele@192.168.1.112
+
+# Convert tabs to spaces
+sudo expand -t 2 /volume1/docker/cloudflared/config.yml > /tmp/config_fixed.yml
+sudo mv /tmp/config_fixed.yml /volume1/docker/cloudflared/config.yml
+
+# Or edit carefully ensuring spaces only
+sudo nano /volume1/docker/cloudflared/config.yml
+
+# Restart tunnel
+sudo systemctl restart cloudflared
+```
 
 ### Container Won't Start
 
@@ -333,16 +476,36 @@ processor:
 3. **Credentials:** Never commit `.env` file to git
 4. **Updates:** Regularly update Docker images for security patches
 
-## Next Steps
+## Deployment Checklist
 
 After successful deployment:
 1. ✅ Verify all tests pass
 2. ✅ Check database tables are created
-3. ⬜ Test Copernicus data fetching (requires API call)
-4. ⬜ Process first satellite image
-5. ⬜ Configure Cloudflare tunnel endpoint
-6. ⬜ Build and deploy React dashboard (Phase 2)
-7. ⬜ Set up scheduled processing
+3. ✅ Test Copernicus data fetching
+4. ✅ Process satellite images
+5. ✅ Configure Cloudflare tunnel endpoint
+6. ✅ Build and deploy React dashboard
+7. ✅ Dashboard live at https://farms.daniele.is
+8. ⬜ Set up automated scheduled processing (every 5 days)
+9. ⬜ Configure email alerts for health threshold violations
+10. ⬜ Set up database backup schedule
+
+## Ongoing Maintenance
+
+### Daily/Weekly
+- Monitor dashboard for data updates
+- Check container health: `docker-compose ps`
+- Review logs for errors: `docker-compose logs --tail 50`
+
+### Monthly
+- Backup database: `docker-compose exec postgres pg_dump -U olive_user olive_monitoring > backup_$(date +%Y%m%d).sql`
+- Review disk usage: `docker system df`
+- Check for Docker image updates
+
+### As Needed
+- Process historical data: `docker-compose exec processor python scripts/compare_historical.py`
+- Update frontend: Rebuild and rsync to NAS
+- Restart services after updates: `docker-compose restart`
 
 ## Support
 
