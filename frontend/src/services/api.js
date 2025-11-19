@@ -62,6 +62,22 @@ export const getDashboardSummary = async () => {
 };
 
 /**
+ * Get historical health data for a zone
+ */
+export const getZoneHistory = async (zoneId, params = {}) => {
+  const response = await api.get(`/api/zones/${zoneId}/history`, {
+    params: {
+      start_year: params.startYear || 2015,
+      end_year: params.endYear || new Date().getFullYear(),
+      month: params.month || 9,
+      day_start: params.dayStart || 10,
+      day_end: params.dayEnd || 25,
+    },
+  });
+  return response.data;
+};
+
+/**
  * Health check
  */
 export const healthCheck = async () => {

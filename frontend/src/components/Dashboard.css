@@ -87,6 +87,7 @@
 /* Sections */
 .map-section,
 .chart-section,
+.historical-section,
 .alerts-section,
 .zone-info {
   background: white;

@@ -8,7 +8,7 @@ from app.config import settings
 from app.database import get_db
 from app.models import FieldZone, HealthIndex, Alert
 from sqlalchemy.orm import Session
-from sqlalchemy import desc, text
+from sqlalchemy import desc, text, extract
 
 app = FastAPI(
     title="Olive Farm Satellite Monitoring API",
@@ -204,6 +204,126 @@ async def get_dashboard_summary():
         return {
             "timestamp": datetime.utcnow().isoformat(),
             "zones": summary
+        }
+    finally:
+        db.close()
+
+
+@app.get("/api/zones/{zone_id}/history")
+async def get_zone_history(
+    zone_id: int,
+    start_year: Optional[int] = 2015,
+    end_year: Optional[int] = None,
+    month: Optional[int] = 9,
+    day_start: Optional[int] = 10,
+    day_end: Optional[int] = 25
+):
+    """Get historical health data for a specific zone.
+
+    Args:
+        zone_id: ID of the field zone
+        start_year: Starting year for historical data (default: 2015)
+        end_year: Ending year for historical data (default: current year)
+        month: Target month for data (default: 9 = September)
+        day_start: Start day of target window (default: 10)
+        day_end: End day of target window (default: 25)
+
+    Returns:
+        List of historical health records with trend indicators
+    """
+    db_gen = get_db()
+    db = next(db_gen)
+
+    try:
+        # Verify zone exists
+        zone = db.query(FieldZone).filter(FieldZone.id == zone_id).first()
+        if not zone:
+            raise HTTPException(status_code=404, detail="Zone not found")
+
+        # Default end_year to current year
+        if end_year is None:
+            end_year = datetime.now().year
+
+        # Validate parameters
+        if start_year > end_year:
+            raise HTTPException(status_code=400, detail="start_year must be <= end_year")
+        if month < 1 or month > 12:
+            raise HTTPException(status_code=400, detail="month must be between 1 and 12")
+
+        # Collect historical data
+        history_data = []
+        prev_health = None
+
+        for year in range(start_year, end_year + 1):
+            # Try to find data within the specific window first
+            health_record = (
+                db.query(HealthIndex)
+                .filter(HealthIndex.zone_id == zone_id)
+                .filter(extract('year', HealthIndex.acquisition_date) == year)
+                .filter(extract('month', HealthIndex.acquisition_date) == month)
+                .filter(extract('day', HealthIndex.acquisition_date) >= day_start)
+                .filter(extract('day', HealthIndex.acquisition_date) <= day_end)
+                .order_by(HealthIndex.vegetation_health_score.desc())
+                .first()
+            )
+
+            # Fallback: If no mid-month data, try the whole month
+            if not health_record:
+                health_record = (
+                    db.query(HealthIndex)
+                    .filter(HealthIndex.zone_id == zone_id)
+                    .filter(extract('year', HealthIndex.acquisition_date) == year)
+                    .filter(extract('month', HealthIndex.acquisition_date) == month)
+                    .order_by(HealthIndex.vegetation_health_score.desc())
+                    .first()
+                )
+
+            if health_record:
+                # Calculate trend
+                trend = "baseline"
+                trend_icon = "⏺️"
+                if prev_health is not None:
+                    diff = health_record.vegetation_health_score - prev_health
+                    if diff > 5:
+                        trend = "improving"
+                        trend_icon = "↗️"
+                    elif diff < -5:
+                        trend = "declining"
+                        trend_icon = "↘️"
+                    else:
+                        trend = "stable"
+                        trend_icon = "➡️"
+
+                history_data.append({
+                    "year": year,
+                    "date": health_record.acquisition_date.isoformat(),
+                    "health_score": health_record.vegetation_health_score,
+                    "ndvi_mean": float(health_record.ndvi_mean),
+                    "ndmi_mean": float(health_record.ndmi_mean),
+                    "trend": trend,
+                    "trend_icon": trend_icon,
+                    "has_data": True
+                })
+
+                prev_health = health_record.vegetation_health_score
+            else:
+                history_data.append({
+                    "year": year,
+                    "date": None,
+                    "health_score": None,
+                    "ndvi_mean": None,
+                    "ndmi_mean": None,
+                    "trend": "no_data",
+                    "trend_icon": "⚪",
+                    "has_data": False
+                })
+
+        return {
+            "zone_id": zone_id,
+            "zone_name": zone.name,
+            "period": f"{month}/{day_start}-{day_end}",
+            "year_range": f"{start_year}-{end_year}",
+            "history": history_data
         }
     finally:
         db.close()
