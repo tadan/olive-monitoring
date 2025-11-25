@@ -1,8 +1,8 @@
 # Olive Farm Satellite Monitoring - Claude Code Context
 
 **Project:** Satellite-based monitoring system for Tatasciore Olive Farm (Abruzzo, Italy)
-**Status:** Phase 1 Complete ✅ | Phase 2 Complete ✅ | Phase 3 Complete ✅
-**Last Updated:** 2025-11-17
+**Status:** Phase 1 Complete ✅ | Phase 2 Complete ✅ | Phase 3 Complete ✅ | Historical Analysis ✅
+**Last Updated:** 2025-11-25
 **Location:** /Users/danieletatasciore/Documents/repos/claude/olive-monitoring
 **Live Dashboard:** https://farms.daniele.is
 
@@ -148,7 +148,8 @@ GET https://farms.daniele.is/              # Dashboard UI
 GET https://farms.daniele.is/health        # Health check
 GET https://farms.daniele.is/api/zones     # List all field zones
 GET https://farms.daniele.is/api/zones/{zone_id}          # Get specific zone details
-GET https://farms.daniele.is/api/zones/{zone_id}/health   # Zone health history
+GET https://farms.daniele.is/api/zones/{zone_id}/health   # Zone health history (recent)
+GET https://farms.daniele.is/api/zones/{zone_id}/history  # Historical health data (year-over-year)
 GET https://farms.daniele.is/api/zones/{zone_id}/alerts   # Zone alerts
 GET https://farms.daniele.is/api/dashboard/summary        # Dashboard summary
 ```
@@ -172,6 +173,74 @@ curl http://localhost:8000/health                    # Direct to API (internal n
 ---
 
 ## Recent Sessions
+
+### Session 2025-11-25: Historical Health Analysis Feature
+
+**Accomplishments:**
+1. ✅ Reviewed and enhanced user's `backend/app/analyse_history.py` script
+2. ✅ Created new API endpoint `GET /api/zones/{zone_id}/history` with configurable date ranges
+3. ✅ Built HistoricalChart component with bar chart visualization and trend indicators
+4. ✅ Integrated historical analysis into Dashboard (loads in parallel with zone data)
+5. ✅ Deployed backend to production NAS and restarted API service
+6. ✅ Ran historical data processing script - downloaded September satellite data (2015-2025)
+7. ⏳ Frontend rebuild in progress on NAS (`npm run build`)
+
+**Feature Implemented:**
+- **Historical Health Analysis** for year-over-year comparison (2015-2025)
+- Default target: mid-September (Sept 10-25) - optimal harvest assessment period
+- Configurable time windows via API query parameters
+- Trend calculation: Improving (↗️), Stable (➡️), Declining (↘️), Baseline (⏺️)
+- Color-coded bar chart: Green (improving), Yellow (stable), Red (declining), Blue (baseline)
+- Detailed tooltips with health score, NDVI, NDMI, and acquisition date
+
+**API Endpoint:**
+```
+GET /api/zones/{zone_id}/history
+Query params: start_year, end_year, month, day_start, day_end
+Returns: Year-over-year health data with trend indicators
+```
+
+**Files Modified:**
+- `backend/app/analyse_history.py` - Enhanced with flexible parameters
+- `backend/app/main.py` - Added history endpoint, added `extract` import from SQLAlchemy
+- `frontend/src/components/HistoricalChart.jsx` - New component (bar chart)
+- `frontend/src/components/HistoricalChart.css` - New styling
+- `frontend/src/components/Dashboard.jsx` - Integrated historical chart
+- `frontend/src/components/Dashboard.css` - Added historical-section styling
+- `frontend/src/services/api.js` - Added getZoneHistory() function
+
+**Git Commit:** `aaf12e9` feat: Add historical health analysis for mid-September data (2015-2025)
+
+**Issues Encountered:**
+
+1. **"Zone not found" API Error:**
+   - Problem: API endpoint returned 404 after deployment
+   - Root Cause: API container hadn't loaded new endpoint code
+   - Solution: Restarted API container with `docker-compose restart api`
+
+2. **Wrong Docker Path for Script:**
+   - Problem: `docker-compose exec processor python backend/app/analyse_history.py` failed
+   - Root Cause: In container, files are at `/app/app/` not `/app/backend/app/`
+   - Solution: Correct command is `python app/analyse_history.py`
+
+3. **Frontend Not Updating:**
+   - Problem: User reported historical chart not appearing
+   - Root Cause: Frontend hadn't been rebuilt after code changes
+   - Solution: Running `npm run build` in frontend directory, then restart dashboard
+
+**Next Steps:**
+- Complete frontend rebuild and verify historical chart displays
+- Check map zone color overlays are working properly
+- Test historical chart with all 3 zones
+- Verify trend indicators display correctly
+
+**Historical Data Status:**
+- Downloaded and processed September satellite imagery for years 2015-2025
+- ~8-10 images processed (~3-5 GB of data)
+- Health indices calculated for all 3 zones for each year
+- Data now available via `/api/zones/{zone_id}/history` endpoint
+
+---
 
 ### Session 2025-11-17: Dashboard Update Issue & Privacy Enhancement
 
