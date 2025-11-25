@@ -70,6 +70,9 @@ class SatelliteDataProcessor:
         """
         Query Sentinel-2 products for all zones.
 
+        Handles multiple farm locations by grouping zones that are far apart
+        and querying each location separately.
+
         Args:
             db: Database session
 
@@ -84,24 +87,38 @@ class SatelliteDataProcessor:
             logger.error("No zones found in database")
             return []
 
-        # Use first zone's geometry as representative (they're all nearby)
-        # For better coverage, could use union of all zones
-        zone = zones[0]
-
-        # FIX: Use Point geometry (zone centroid) instead of Polygon
-        # This ensures we only get tiles that contain the farm location,
-        # not adjacent tiles that merely intersect the search polygon
         from shapely.geometry import shape
-        zone_shape = shape(zone.geometry)
-        centroid = zone_shape.centroid
 
-        # Create Point geometry for query
-        query_geometry = {
-            "type": "Point",
-            "coordinates": [centroid.x, centroid.y]
-        }
+        # Group zones by location (cluster zones that are close together)
+        # Use 0.5 degree (~55km) as threshold to separate different farms
+        location_groups = []
+        DISTANCE_THRESHOLD = 0.5  # degrees
 
-        logger.info(f"Query location: {centroid.y:.4f}°N, {centroid.x:.4f}°E")
+        for zone in zones:
+            zone_shape = shape(zone.geometry)
+            centroid = zone_shape.centroid
+
+            # Find if this zone belongs to an existing group
+            added_to_group = False
+            for group in location_groups:
+                group_centroid = group['centroid']
+                # Simple Euclidean distance (good enough for grouping)
+                distance = ((centroid.x - group_centroid.x)**2 +
+                           (centroid.y - group_centroid.y)**2)**0.5
+
+                if distance < DISTANCE_THRESHOLD:
+                    group['zones'].append(zone)
+                    added_to_group = True
+                    break
+
+            # Create new group if needed
+            if not added_to_group:
+                location_groups.append({
+                    'centroid': centroid,
+                    'zones': [zone]
+                })
+
+        logger.info(f"Found {len(location_groups)} farm location(s) with {len(zones)} total zones")
 
         # Calculate date range
         end_date = datetime.now().date()
@@ -112,16 +129,39 @@ class SatelliteDataProcessor:
             f"(cloud coverage < {self.cloud_coverage_max}%)"
         )
 
-        # Query products using Point geometry
-        products = self.fetcher.query_products(
-            geometry=query_geometry,
-            start_date=start_date,
-            end_date=end_date,
-            cloud_coverage_max=self.cloud_coverage_max
-        )
+        # Query products for each location group
+        all_products = []
+        for i, group in enumerate(location_groups, 1):
+            centroid = group['centroid']
+            zone_names = [z.name for z in group['zones']]
 
-        logger.info(f"Found {len(products)} products")
-        return products
+            logger.info(
+                f"Location {i}/{len(location_groups)}: {centroid.y:.4f}°N, {centroid.x:.4f}°E "
+                f"({len(group['zones'])} zones: {', '.join(zone_names)})"
+            )
+
+            # Create Point geometry for query
+            query_geometry = {
+                "type": "Point",
+                "coordinates": [centroid.x, centroid.y]
+            }
+
+            # Query products using Point geometry
+            products = self.fetcher.query_products(
+                geometry=query_geometry,
+                start_date=start_date,
+                end_date=end_date,
+                cloud_coverage_max=self.cloud_coverage_max
+            )
+
+            logger.info(f"  Found {len(products)} products for this location")
+            all_products.extend(products)
+
+        # Remove duplicates (in case locations overlap in satellite tiles)
+        unique_products = {p['name']: p for p in all_products}.values()
+        logger.info(f"Total unique products: {len(unique_products)}")
+
+        return list(unique_products)
 
     def filter_new_products(self, db, products: List[dict]) -> List[dict]:
         """
