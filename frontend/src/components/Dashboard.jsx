@@ -6,6 +6,7 @@ import FarmMap from './FarmMap'
 import HealthChart from './HealthChart'
 import HistoricalChart from './HistoricalChart'
 import AlertViewer from './AlertViewer'
+import FarmSelector from './FarmSelector'
 import {
     getZones,
     getZoneHealth,
@@ -15,10 +16,17 @@ import {
 } from '../services/api'
 import './Dashboard.css'
 
+// Define farms for comparison
+const FARMS = [
+    { id: 'olive', name: "Cuppino's Olive Farm", location: 'Abruzzo, Italy' },
+    { id: 'ridgedale', name: 'Ridgedale Farm', location: 'Sweden' },
+]
+
 const Dashboard = () => {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [zones, setZones] = useState([])
+    const [selectedFarm, setSelectedFarm] = useState('olive')
     const [selectedZone, setSelectedZone] = useState(null)
     const [healthData, setHealthData] = useState([])
     const [historicalData, setHistoricalData] = useState(null)
@@ -30,12 +38,38 @@ const Dashboard = () => {
         loadDashboardData()
     }, [])
 
+    // Reset selected zone when farm changes
+    useEffect(() => {
+        const farmZones = getFilteredZones()
+        if (farmZones.length > 0) {
+            setSelectedZone(farmZones[0].id)
+        } else {
+            setSelectedZone(null)
+        }
+    }, [selectedFarm, zones])
+
     // Load health data when zone is selected
     useEffect(() => {
         if (selectedZone) {
             loadZoneData(selectedZone)
+        } else {
+            setHealthData([])
+            setAlerts([])
+            setHistoricalData(null)
         }
     }, [selectedZone])
+
+    // Filter zones by selected farm
+    const getFilteredZones = () => {
+        return zones.filter((zone) => {
+            // Ridgedale zones have "Ridgedale" in the name
+            if (selectedFarm === 'ridgedale') {
+                return zone.name.includes('Ridgedale')
+            }
+            // Olive zones don't have "Ridgedale" in the name
+            return !zone.name.includes('Ridgedale')
+        })
+    }
 
     const loadDashboardData = async () => {
         try {
@@ -102,27 +136,30 @@ const Dashboard = () => {
         )
     }
 
-    const selectedZoneData = zones.find((z) => z.id === selectedZone)
+    const filteredZones = getFilteredZones()
+    const selectedZoneData = filteredZones.find((z) => z.id === selectedZone)
     const summaryByZone =
         summary?.zones.reduce((acc, zone) => {
             acc[zone.zone_id] = zone
             return acc
         }, {}) || {}
 
+    const currentFarm = FARMS.find((f) => f.id === selectedFarm)
+
     return (
         <div className='dashboard'>
             <header className='dashboard-header'>
                 <div className='header-content'>
-                    <h1>Cuppino's Micro Olive Farm 🛰️ Monitoring</h1>
+                    <h1>🛰️ Farm Health Monitoring</h1>
                     <p>
-                        Real-time satellite health monitoring • Abruzzo, Italy
+                        Real-time satellite health monitoring via Sentinel-2
                     </p>
                 </div>
                 <div className='header-stats'>
                     <div className='stat-card'>
                         <span className='stat-label'>Total Area</span>
                         <span className='stat-value'>
-                            {zones
+                            {filteredZones
                                 .reduce(
                                     (sum, z) =>
                                         sum + parseFloat(z.area_hectares),
@@ -134,7 +171,7 @@ const Dashboard = () => {
                     </div>
                     <div className='stat-card'>
                         <span className='stat-label'>Active Zones</span>
-                        <span className='stat-value'>{zones.length}</span>
+                        <span className='stat-value'>{filteredZones.length}</span>
                     </div>
                     <div className='stat-card'>
                         <span className='stat-label'>Active Alerts</span>
@@ -145,52 +182,72 @@ const Dashboard = () => {
                 </div>
             </header>
 
+            <FarmSelector
+                farms={FARMS}
+                selectedFarm={selectedFarm}
+                onSelectFarm={setSelectedFarm}
+            />
+
             <div className='dashboard-content'>
                 <div className='left-panel'>
                     <section className='map-section'>
-                        <FarmMap zones={zones} healthData={summaryByZone} />
+                        <FarmMap zones={filteredZones} healthData={summaryByZone} />
                     </section>
 
-                    <section className='zone-selector'>
-                        <h3>Select Zone</h3>
-                        <div className='zone-buttons'>
-                            {zones.map((zone) => (
-                                <button
-                                    key={zone.id}
-                                    className={`zone-button ${
-                                        selectedZone === zone.id ? 'active' : ''
-                                    }`}
-                                    onClick={() => setSelectedZone(zone.id)}
-                                >
-                                    <div className='zone-button-name'>
-                                        {zone.name}
-                                    </div>
-                                    <div className='zone-button-area'>
-                                        {zone.area_hectares} ha
-                                    </div>
-                                    {summaryByZone[zone.id]
-                                        ?.latest_health_score && (
-                                        <div className='zone-button-health'>
-                                            Health:{' '}
-                                            {
-                                                summaryByZone[zone.id]
-                                                    .latest_health_score
-                                            }
-                                            /100
-                                        </div>
-                                    )}
-                                </button>
-                            ))}
-                        </div>
-                    </section>
+                    {filteredZones.length > 0 ? (
+                        <>
+                            <section className='zone-selector'>
+                                <h3>Select Zone</h3>
+                                <div className='zone-buttons'>
+                                    {filteredZones.map((zone) => (
+                                        <button
+                                            key={zone.id}
+                                            className={`zone-button ${
+                                                selectedZone === zone.id ? 'active' : ''
+                                            }`}
+                                            onClick={() => setSelectedZone(zone.id)}
+                                        >
+                                            <div className='zone-button-name'>
+                                                {zone.name}
+                                            </div>
+                                            <div className='zone-button-area'>
+                                                {zone.area_hectares} ha
+                                            </div>
+                                            {summaryByZone[zone.id]
+                                                ?.latest_health_score && (
+                                                <div className='zone-button-health'>
+                                                    Health:{' '}
+                                                    {
+                                                        summaryByZone[zone.id]
+                                                            .latest_health_score
+                                                    }
+                                                    /100
+                                                </div>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            </section>
 
-                    <section className='chart-section'>
-                        <HealthChart healthData={healthData} />
-                    </section>
+                            <section className='chart-section'>
+                                <HealthChart healthData={healthData} />
+                            </section>
 
-                    <section className='historical-section'>
-                        <HistoricalChart historyData={historicalData} />
-                    </section>
+                            <section className='historical-section'>
+                                <HistoricalChart historyData={historicalData} />
+                            </section>
+                        </>
+                    ) : (
+                        <section className='no-data-message'>
+                            <div className='message-box'>
+                                <h3>📊 No Data Available</h3>
+                                <p>
+                                    No zones found for {currentFarm?.name}.
+                                    Please add zones to see health monitoring data.
+                                </p>
+                            </div>
+                        </section>
+                    )}
                 </div>
 
                 <div className='right-panel'>
