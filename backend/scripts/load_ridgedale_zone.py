@@ -6,7 +6,7 @@ from pathlib import Path
 # Add backend to path so we can import app modules
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from app.database import SessionLocal
+from app.database import get_session_local
 from app.models import FieldZone
 
 
@@ -18,6 +18,7 @@ def load_zone_from_json(json_path: str) -> dict:
 
 def add_zone_to_database(zone: dict):
     """Add zone to database."""
+    SessionLocal = get_session_local()
     db = SessionLocal()
 
     try:
