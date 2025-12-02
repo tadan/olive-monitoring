@@ -42,3 +42,9 @@
   border-radius: 4px;
   font-weight: 500;
 }
+
+.zone-popup .no-data {
+  color: #9ca3af;
+  font-style: italic;
+  margin-top: 8px;
+}
