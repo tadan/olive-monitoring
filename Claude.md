@@ -1,8 +1,8 @@
 # Olive Farm Satellite Monitoring - Claude Code Context
 
 **Project:** Satellite-based monitoring system for Tatasciore Olive Farm (Abruzzo, Italy)
-**Status:** Phase 1 Complete ✅ | Phase 2 Complete ✅ | Phase 3 Complete ✅ | Historical Analysis ✅
-**Last Updated:** 2025-11-25
+**Status:** Phase 1 Complete ✅ | Phase 2 Complete ✅ | Phase 3 Complete ✅ | Historical Analysis ✅ | Enhanced Indices ✅
+**Last Updated:** 2026-01-15
 **Location:** /Users/danieletatasciore/Documents/repos/claude/olive-monitoring
 **Live Dashboard:** https://farms.daniele.is
 
@@ -38,7 +38,7 @@ A self-hosted satellite monitoring portal that automatically tracks olive grove 
 **Database Schema (6 tables):**
 - `field_zones` - Olive grove boundaries (GeoJSON)
 - `satellite_images` - Sentinel-2 metadata
-- `health_indices` - NDVI/NDMI time-series data
+- `health_indices` - NDVI/NDMI/ARVI/OSAVI time-series data (4 vegetation indices)
 - `alerts` - Health anomaly alerts
 - `baseline_statistics` - Seasonal baseline data
 - Indexes for performance optimization
@@ -75,7 +75,7 @@ A self-hosted satellite monitoring portal that automatically tracks olive grove 
 3. Configuration management (Pydantic settings)
 4. Database models (7 SQLAlchemy models)
 5. Copernicus Sentinel-2 data fetcher
-6. NDVI/NDMI calculation functions
+6. Vegetation indices calculation (NDVI, NDMI, ARVI, OSAVI)
 7. FastAPI with 8 endpoints
 8. Unit tests (18 tests, all passing)
 9. KML parsing and field zone loading
@@ -108,12 +108,13 @@ A self-hosted satellite monitoring portal that automatically tracks olive grove 
 3. `backend/scripts/process_satellite_data.py` - Main processing orchestration
 4. Band resolution resampling (SWIR 20m → 10m)
 5. Historical data comparison capability
-6. NDVI/NDMI calculation and storage
+6. Four vegetation indices (NDVI, NDMI, ARVI, OSAVI)
+7. Multi-index health score calculation
 
 **Key Features:**
 - Automatic tile selection using zone centroids
-- Multi-band processing with resolution normalization
-- Health score calculation (0-100)
+- Multi-band processing (Blue, Red, NIR, SWIR) with resolution normalization
+- Research-backed health score calculation (multi-index composite: ARVI 30%, OSAVI 30%, NDVI 20%, NDMI 20%)
 - Alert generation based on thresholds
 - Historical comparison (e.g., July 2015 vs July 2025)
 
@@ -173,6 +174,78 @@ curl http://localhost:8000/health                    # Direct to API (internal n
 ---
 
 ## Recent Sessions
+
+### Session 2026-01-15: ARVI and OSAVI Vegetation Indices Implementation
+
+**Accomplishments:**
+1. ✅ Implemented ARVI (Atmospherically Resistant Vegetation Index)
+2. ✅ Implemented OSAVI (Optimized Soil-Adjusted Vegetation Index)
+3. ✅ Updated health score to use multi-index composite (ARVI 30%, OSAVI 30%, NDVI 20%, NDMI 20%)
+4. ✅ Extended database schema with 8 new columns for ARVI/OSAVI statistics
+5. ✅ Updated image processor to extract Blue band (B02) for ARVI calculation
+6. ✅ Modified API endpoints to return new indices
+7. ✅ Created and applied database migration script
+8. ✅ Deployed to production NAS and verified
+
+**Feature Implemented:**
+- **ARVI**: Reduces atmospheric interference using Blue band self-correction (r²=0.73-0.76 with olive disease)
+- **OSAVI**: Corrects for soil background effects in sparse olive canopy (3x error reduction vs basic indices)
+- **Multi-Index Health Score**: Weighted composite of 4 indices for more robust health assessment
+- **Backward Compatibility**: Gracefully falls back to NDVI+NDMI for existing data
+
+**Technical Details:**
+
+**Vegetation Indices:**
+- ARVI formula: `(NIR - (Red - γ(Blue - Red))) / (NIR + (Red - γ(Blue - Red)))` where γ=1.0
+- OSAVI formula: `(1 + L)(NIR - Red) / (NIR + Red + L)` where L=0.16
+- Based on peer-reviewed research for olive orchards
+- Blue band (B02) extraction added to image processor
+
+**Health Score Calculation:**
+```
+Health Score = (ARVI_norm × 0.30) + (OSAVI_norm × 0.30) + (NDVI_norm × 0.20) + (NDMI_norm × 0.20)
+```
+
+**Database Changes:**
+- Added 8 columns to `health_indices` table: arvi_mean, arvi_std, arvi_min, arvi_max, osavi_mean, osavi_std, osavi_min, osavi_max
+- Migration script: `backend/scripts/migrate_add_arvi_osavi.sql`
+- All columns nullable for backward compatibility
+
+**Files Modified:**
+- `backend/app/vegetation_indices.py` - Added ARVI and OSAVI calculation functions
+- `backend/app/image_processor.py` - Blue band extraction, multi-index processing, updated health score
+- `backend/app/models.py` - Extended HealthIndex model with 8 new columns
+- `backend/app/main.py` - Updated API endpoints to return new indices
+- `backend/scripts/migrate_add_arvi_osavi.sql` - Database migration script (new file)
+
+**Git Commit:** `63e3b21` feat: Add ARVI and OSAVI vegetation indices for enhanced monitoring
+
+**Deployment Steps:**
+1. Pushed code to GitHub
+2. SSH to NAS and pulled latest code
+3. Applied database migration: `docker-compose exec -T postgres psql -U olive_user -d olive_monitoring < backend/scripts/migrate_add_arvi_osavi.sql`
+4. Rebuilt processor container: `docker-compose up -d --build processor`
+5. Restarted API container: `docker-compose restart api`
+6. Verified API health: `curl http://localhost:8080/api/zones/5/health`
+
+**Current Status:**
+- Backend deployed and operational
+- Database schema updated with new columns
+- API returning ARVI/OSAVI (null for existing data, populated for new satellite passes)
+- Health scores backward compatible (uses NDVI+NDMI fallback for old data)
+- Next satellite pass (~5 days) will automatically include ARVI/OSAVI values
+
+**Research Foundation:**
+- Hornero et al. (2019): ARVI achieves r²=0.73-0.76 correlation with Xylella disease in olive trees
+- Rondeaux et al. (1996): OSAVI L=0.16 optimized for intermediate canopy cover
+- Zarco-Tejada et al. (2018): Multi-index approach reduces error by 3x vs single indices
+
+**Next Steps:**
+- Wait for next satellite pass to see ARVI/OSAVI populated
+- Consider frontend update to visualize new indices
+- Monitor processing logs to verify calculations working correctly
+
+---
 
 ### Session 2025-11-25: Historical Health Analysis Feature
 
@@ -551,6 +624,7 @@ sudo nano /volume1/docker/cloudflared/config.yml
 **Remote:** origin (GitHub)
 
 **Recent Commits:**
+- `63e3b21` - feat: Add ARVI and OSAVI vegetation indices for enhanced monitoring
 - `24babfb` - fix: Make load_field_zones.py handle config without location key
 - `0763f0f` - refactor: Move scripts and config into backend folder for Docker access
 - `3bfbf26` - fix: Make load_field_zones.py work inside Docker container
