@@ -16,6 +16,8 @@ from app.models import FieldZone, SatelliteImage, HealthIndex
 from app.vegetation_indices import (
     calculate_ndvi,
     calculate_ndmi,
+    calculate_arvi,
+    calculate_osavi,
     calculate_health_score,
     calculate_statistics
 )
@@ -28,6 +30,7 @@ class ImageProcessor:
 
     # Sentinel-2 band mappings (10m and 20m resolution)
     BAND_MAPPING = {
+        'blue': 'B02',     # Blue band (10m resolution) - for ARVI
         'red': 'B04',      # Red band (10m resolution)
         'nir': 'B08',      # Near-infrared (10m resolution)
         'swir': 'B11'      # Shortwave infrared (20m resolution)
@@ -116,6 +119,7 @@ class ImageProcessor:
         Extract and clip required bands for a zone.
 
         Handles different band resolutions by resampling all bands to 10m resolution:
+        - Blue (B02): 10m native
         - Red (B04): 10m native
         - NIR (B08): 10m native
         - SWIR (B11): 20m native → resampled to 10m
@@ -125,7 +129,7 @@ class ImageProcessor:
             zone_geometry: GeoJSON geometry defining the zone boundary
 
         Returns:
-            Dictionary with 'red', 'nir', 'swir' numpy arrays (all same shape), or None if failed
+            Dictionary with 'blue', 'red', 'nir', 'swir' numpy arrays (all same shape), or None if failed
         """
         try:
             # Extract if zipped
@@ -140,8 +144,8 @@ class ImageProcessor:
             reference_transform = None
             reference_crs = None
 
-            # First pass: extract Red and NIR (10m resolution)
-            for band_key in ['red', 'nir']:
+            # First pass: extract Blue, Red and NIR (10m resolution)
+            for band_key in ['blue', 'red', 'nir']:
                 band_name = self.BAND_MAPPING[band_key]
                 band_file = self.find_band_file(product_path, band_name)
 
@@ -231,29 +235,37 @@ class ImageProcessor:
     def calculate_indices_for_zone(
         self,
         bands: Dict[str, np.ndarray]
-    ) -> Optional[Tuple[np.ndarray, np.ndarray]]:
+    ) -> Optional[Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]]:
         """
-        Calculate NDVI and NDMI from extracted bands.
+        Calculate all vegetation indices from extracted bands.
 
         Args:
-            bands: Dictionary with 'red', 'nir', 'swir' arrays
+            bands: Dictionary with 'blue', 'red', 'nir', 'swir' arrays
 
         Returns:
-            Tuple of (ndvi_array, ndmi_array), or None if failed
+            Tuple of (ndvi_array, ndmi_array, arvi_array, osavi_array), or None if failed
         """
         try:
-            # Calculate NDVI
+            # Calculate NDVI (general vegetation index)
             ndvi = calculate_ndvi(bands['red'], bands['nir'])
 
-            # Calculate NDMI
+            # Calculate NDMI (moisture index)
             ndmi = calculate_ndmi(bands['nir'], bands['swir'])
+
+            # Calculate ARVI (atmospherically resistant)
+            arvi = calculate_arvi(bands['red'], bands['nir'], bands['blue'])
+
+            # Calculate OSAVI (soil-adjusted)
+            osavi = calculate_osavi(bands['red'], bands['nir'])
 
             logger.info(
                 f"Calculated indices - NDVI: {np.nanmean(ndvi):.3f}, "
-                f"NDMI: {np.nanmean(ndmi):.3f}"
+                f"NDMI: {np.nanmean(ndmi):.3f}, "
+                f"ARVI: {np.nanmean(arvi):.3f}, "
+                f"OSAVI: {np.nanmean(osavi):.3f}"
             )
 
-            return ndvi, ndmi
+            return ndvi, ndmi, arvi, osavi
 
         except Exception as e:
             logger.error(f"Failed to calculate indices: {e}", exc_info=True)
@@ -305,14 +317,16 @@ class ImageProcessor:
             if indices is None:
                 return None
 
-            ndvi, ndmi = indices
+            ndvi, ndmi, arvi, osavi = indices
 
-            # Calculate statistics
+            # Calculate statistics for all indices
             ndvi_mean, ndvi_std, ndvi_min, ndvi_max = calculate_statistics(ndvi)
             ndmi_mean, ndmi_std, ndmi_min, ndmi_max = calculate_statistics(ndmi)
+            arvi_mean, arvi_std, arvi_min, arvi_max = calculate_statistics(arvi)
+            osavi_mean, osavi_std, osavi_min, osavi_max = calculate_statistics(osavi)
 
-            # Calculate overall health score
-            health_score = calculate_health_score(ndvi_mean, ndmi_mean)
+            # Calculate overall health score (uses multi-index composite)
+            health_score = calculate_health_score(ndvi_mean, ndmi_mean, arvi_mean, osavi_mean)
 
             # Create health index record
             health_index = HealthIndex(
@@ -327,6 +341,14 @@ class ImageProcessor:
                 ndmi_std=ndmi_std,
                 ndmi_min=ndmi_min,
                 ndmi_max=ndmi_max,
+                arvi_mean=arvi_mean,
+                arvi_std=arvi_std,
+                arvi_min=arvi_min,
+                arvi_max=arvi_max,
+                osavi_mean=osavi_mean,
+                osavi_std=osavi_std,
+                osavi_min=osavi_min,
+                osavi_max=osavi_max,
                 vegetation_health_score=health_score
             )
 

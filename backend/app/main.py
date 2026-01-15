@@ -123,8 +123,10 @@ async def get_zone_health(zone_id: int, limit: int = 10):
 
         return [{
             "date": record.acquisition_date.isoformat(),
-            "ndvi_mean": float(record.ndvi_mean),
-            "ndmi_mean": float(record.ndmi_mean),
+            "ndvi_mean": float(record.ndvi_mean) if record.ndvi_mean else None,
+            "ndmi_mean": float(record.ndmi_mean) if record.ndmi_mean else None,
+            "arvi_mean": float(record.arvi_mean) if record.arvi_mean else None,
+            "osavi_mean": float(record.osavi_mean) if record.osavi_mean else None,
             "health_score": record.vegetation_health_score,
             "cloud_coverage": None  # Cloud coverage is in SatelliteImage, not HealthIndex
         } for record in health_records]
@@ -298,8 +300,10 @@ async def get_zone_history(
                     "year": year,
                     "date": health_record.acquisition_date.isoformat(),
                     "health_score": health_record.vegetation_health_score,
-                    "ndvi_mean": float(health_record.ndvi_mean),
-                    "ndmi_mean": float(health_record.ndmi_mean),
+                    "ndvi_mean": float(health_record.ndvi_mean) if health_record.ndvi_mean else None,
+                    "ndmi_mean": float(health_record.ndmi_mean) if health_record.ndmi_mean else None,
+                    "arvi_mean": float(health_record.arvi_mean) if health_record.arvi_mean else None,
+                    "osavi_mean": float(health_record.osavi_mean) if health_record.osavi_mean else None,
                     "trend": trend,
                     "trend_icon": trend_icon,
                     "has_data": True
@@ -313,6 +317,8 @@ async def get_zone_history(
                     "health_score": None,
                     "ndvi_mean": None,
                     "ndmi_mean": None,
+                    "arvi_mean": None,
+                    "osavi_mean": None,
                     "trend": "no_data",
                     "trend_icon": "⚪",
                     "has_data": False
