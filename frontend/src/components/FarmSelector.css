@@ -1,54 +1,89 @@
+/**
+ * Farm Selector Component Styles
+ * Normalized with design token system
+ */
+
 .farm-selector {
-    margin-bottom: 2rem;
-    padding: 0 1rem;
+  margin-bottom: var(--space-8);
+  padding: 0 var(--space-6);
 }
 
 .farm-tabs {
-    display: flex;
-    gap: 1rem;
-    border-bottom: 2px solid #e5e7eb;
+  display: flex;
+  gap: var(--space-4);
+  border-bottom: 2px solid var(--border-color);
 }
 
 .farm-tab {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 1rem 1.5rem;
-    background: transparent;
-    border: none;
-    border-bottom: 3px solid transparent;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    position: relative;
-    bottom: -2px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: var(--space-5) var(--space-6);
+  background-color: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  transition: all var(--duration-base) var(--ease-out);
+  position: relative;
+  bottom: -2px;
+  min-height: 44px;
 }
 
-.farm-tab:hover {
-    background: #f9fafb;
-    border-bottom-color: #d1d5db;
+.farm-tab:hover:not(.active) {
+  background-color: var(--bg-surface-hover);
+  border-bottom-color: var(--color-stone-300);
 }
 
 .farm-tab.active {
-    background: #f0fdf4;
-    border-bottom-color: #22c55e;
+  background-color: var(--color-olive-50);
+  border-bottom-color: var(--color-olive-600);
+}
+
+.farm-tab:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
 }
 
 .farm-tab .farm-name {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1f2937;
-    margin-bottom: 0.25rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+  letter-spacing: var(--tracking-tight);
 }
 
 .farm-tab .farm-location {
-    font-size: 0.875rem;
-    color: #6b7280;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
 }
 
 .farm-tab.active .farm-name {
-    color: #16a34a;
+  color: var(--color-olive-700);
 }
 
 .farm-tab.active .farm-location {
-    color: #15803d;
+  color: var(--color-olive-600);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .farm-tabs {
+    flex-direction: column;
+    border-bottom: none;
+    gap: var(--space-2);
+  }
+
+  .farm-tab {
+    border-bottom: none;
+    border-left: 3px solid transparent;
+    bottom: 0;
+    padding-left: var(--space-5);
+  }
+
+  .farm-tab.active {
+    border-left-color: var(--color-olive-600);
+  }
 }

@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import { ChartColors, colorWithOpacity, resolveColor } from '../design-system';
 import './HistoricalChart.css';
 
 // Register Chart.js components
@@ -59,18 +60,18 @@ const HistoricalChart = ({ historyData }) => {
         label: 'Health Score',
         data: history.map((h) => (h.has_data ? h.health_score : null)),
         backgroundColor: history.map((h) => {
-          if (!h.has_data) return 'rgba(200, 200, 200, 0.3)';
-          if (h.trend === 'improving') return 'rgba(34, 197, 94, 0.7)';
-          if (h.trend === 'declining') return 'rgba(239, 68, 68, 0.7)';
-          if (h.trend === 'stable') return 'rgba(234, 179, 8, 0.7)';
-          return 'rgba(59, 130, 246, 0.7)'; // baseline
+          if (!h.has_data) return colorWithOpacity('var(--color-stone-400)', 0.3);
+          if (h.trend === 'improving') return colorWithOpacity(ChartColors.improving, 0.7);
+          if (h.trend === 'declining') return colorWithOpacity(ChartColors.declining, 0.7);
+          if (h.trend === 'stable') return colorWithOpacity(ChartColors.stable, 0.7);
+          return colorWithOpacity(ChartColors.baseline, 0.7);
         }),
         borderColor: history.map((h) => {
-          if (!h.has_data) return 'rgba(200, 200, 200, 0.5)';
-          if (h.trend === 'improving') return 'rgba(34, 197, 94, 1)';
-          if (h.trend === 'declining') return 'rgba(239, 68, 68, 1)';
-          if (h.trend === 'stable') return 'rgba(234, 179, 8, 1)';
-          return 'rgba(59, 130, 246, 1)';
+          if (!h.has_data) return colorWithOpacity('var(--color-stone-400)', 0.5);
+          if (h.trend === 'improving') return resolveColor(ChartColors.improving);
+          if (h.trend === 'declining') return resolveColor(ChartColors.declining);
+          if (h.trend === 'stable') return resolveColor(ChartColors.stable);
+          return resolveColor(ChartColors.baseline);
         }),
         borderWidth: 2,
       },

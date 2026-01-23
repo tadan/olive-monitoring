@@ -14,6 +14,7 @@ import {
   Filler,
 } from 'chart.js';
 import { format } from 'date-fns';
+import { ChartColors, colorWithOpacity, resolveColor } from '../design-system';
 import './HealthChart.css';
 
 // Register Chart.js components
@@ -48,8 +49,8 @@ const HealthChart = ({ healthData }) => {
       {
         label: 'Health Score',
         data: sortedData.map(d => d.health_score),
-        borderColor: '#22c55e',
-        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+        borderColor: resolveColor(ChartColors.health),
+        backgroundColor: colorWithOpacity(ChartColors.health, 0.1),
         fill: true,
         tension: 0.4,
         yAxisID: 'y',
@@ -57,8 +58,8 @@ const HealthChart = ({ healthData }) => {
       {
         label: 'NDVI',
         data: sortedData.map(d => d.ndvi_mean * 100), // Scale NDVI to 0-100
-        borderColor: '#3b82f6',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        borderColor: resolveColor(ChartColors.ndvi),
+        backgroundColor: colorWithOpacity(ChartColors.ndvi, 0.1),
         fill: true,
         tension: 0.4,
         yAxisID: 'y',
@@ -66,8 +67,8 @@ const HealthChart = ({ healthData }) => {
       {
         label: 'NDMI',
         data: sortedData.map(d => d.ndmi_mean * 100), // Scale NDMI to 0-100
-        borderColor: '#8b5cf6',
-        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+        borderColor: resolveColor(ChartColors.ndmi),
+        backgroundColor: colorWithOpacity(ChartColors.ndmi, 0.1),
         fill: true,
         tension: 0.4,
         yAxisID: 'y',

@@ -1,109 +1,175 @@
+/**
+ * Alert Viewer Component Styles
+ * Normalized with design token system
+ */
+
 .alert-viewer-container {
-  background: white;
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
 }
 
 .alert-header h2 {
-  margin: 0 0 20px 0;
-  color: #1f2937;
-  font-size: 20px;
-  font-weight: 600;
+  margin: 0 0 var(--space-6) 0;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
 }
+
+/* ============================================
+   ALERT LIST
+   ============================================ */
 
 .alert-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-4);
 }
 
 .alert-item {
   display: flex;
-  gap: 12px;
-  padding: 16px;
-  background: #f9fafb;
-  border-radius: 8px;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background-color: var(--bg-canvas);
+  border-radius: var(--radius-md);
   border-left: 4px solid;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all var(--duration-base) var(--ease-out);
+  box-shadow: var(--shadow-sm);
 }
 
 .alert-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .alert-icon {
-  font-size: 24px;
+  font-size: var(--text-3xl);
   line-height: 1;
+  flex-shrink: 0;
 }
 
 .alert-content {
   flex: 1;
+  min-width: 0; /* Allow text truncation */
 }
+
+/* ============================================
+   ALERT HEADER ROW
+   ============================================ */
 
 .alert-title-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+  flex-wrap: wrap;
 }
 
 .alert-title-row h3 {
   margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #1f2937;
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+  flex: 1;
 }
 
 .alert-severity-badge {
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
   text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  flex-shrink: 0;
 }
 
+/* ============================================
+   ALERT CONTENT
+   ============================================ */
+
 .alert-description {
-  margin: 0 0 12px 0;
-  font-size: 14px;
-  color: #4b5563;
-  line-height: 1.5;
+  margin: 0 0 var(--space-4) 0;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: var(--leading-normal);
 }
 
 .alert-meta {
   display: flex;
-  gap: 16px;
-  font-size: 12px;
-  color: #6b7280;
+  gap: var(--space-5);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  flex-wrap: wrap;
 }
 
 .alert-type {
-  font-weight: 500;
+  font-weight: var(--weight-medium);
   text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
 }
 
 .alert-date::before {
   content: '📅 ';
+  margin-right: var(--space-1);
 }
+
+/* ============================================
+   ALERT SUMMARY
+   ============================================ */
 
 .alert-summary-item {
-  margin-top: 16px;
-  padding: 8px 12px;
-  background: #f3f4f6;
-  border-radius: 6px;
+  margin-top: var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--bg-canvas);
+  border-radius: var(--radius-md);
   display: inline-block;
-  font-size: 14px;
-  font-weight: 500;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
 }
 
-/* Empty state */
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+
 .alert-viewer-container > h2:first-child {
-  font-size: 24px;
-  margin-bottom: 8px;
+  font-family: var(--font-mono);
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-semibold);
+  margin-bottom: var(--space-3);
+  color: var(--text-primary);
 }
 
 .alert-viewer-container > p {
-  color: #6b7280;
+  font-family: var(--font-sans);
+  color: var(--text-secondary);
   margin: 0;
+  line-height: var(--leading-relaxed);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 640px) {
+  .alert-item {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .alert-title-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .alert-meta {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
 }

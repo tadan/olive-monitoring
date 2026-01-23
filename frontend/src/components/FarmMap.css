@@ -1,9 +1,13 @@
+/**
+ * Farm Map Component Styles
+ * Normalized with design token system
+ */
+
 .farm-map-container {
-  height: 500px;
+  height: 100%;
   width: 100%;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .farm-map-placeholder {
@@ -12,39 +16,102 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f3f4f6;
-  border-radius: 8px;
-  color: #6b7280;
+  background-color: var(--bg-canvas);
+  border-radius: var(--radius-lg);
+  color: var(--text-tertiary);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
 }
 
+/* ============================================
+   LEAFLET POPUP CUSTOMIZATION
+   ============================================ */
+
 .zone-popup {
-  min-width: 200px;
+  min-width: 220px;
+  font-family: var(--font-sans);
 }
 
 .zone-popup h3 {
-  margin: 0 0 10px 0;
-  color: #1f2937;
-  font-size: 16px;
-  font-weight: 600;
+  margin: 0 0 var(--space-3) 0;
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
 }
 
 .zone-popup p {
-  margin: 5px 0;
-  font-size: 14px;
-  color: #4b5563;
+  margin: var(--space-2) 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: var(--leading-normal);
 }
 
+.zone-popup p strong {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-semibold);
+  color: var(--text-primary);
+}
+
+/* Alert badge in popup */
 .alert-badge {
-  margin-top: 8px;
-  padding: 4px 8px;
-  background: #fef3c7;
-  border-left: 3px solid #f59e0b;
-  border-radius: 4px;
-  font-weight: 500;
+  margin-top: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-warning);
+  background-image: linear-gradient(
+    90deg,
+    var(--color-warning) 0%,
+    oklch(from var(--color-warning) calc(l * 1.05) c h) 100%
+  );
+  border-left: 3px solid var(--color-error);
+  border-radius: var(--radius-sm);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-sm);
+  color: var(--color-stone-900);
 }
 
 .zone-popup .no-data {
-  color: #9ca3af;
+  color: var(--text-tertiary);
   font-style: italic;
-  margin-top: 8px;
+  font-size: var(--text-sm);
+  margin-top: var(--space-3);
+}
+
+/* ============================================
+   LEAFLET OVERRIDE STYLES
+   Customize Leaflet defaults to match design system
+   ============================================ */
+
+/* Override Leaflet popup styles */
+.leaflet-popup-content-wrapper {
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-lg) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.leaflet-popup-tip {
+  border-top-color: var(--border-color) !important;
+}
+
+/* Leaflet controls styling */
+.leaflet-control-zoom a {
+  background-color: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: var(--radius-sm) !important;
+  font-family: var(--font-mono) !important;
+  transition: all var(--duration-base) var(--ease-out) !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background-color: var(--bg-surface-hover) !important;
+  border-color: var(--border-color-hover) !important;
+}
+
+.leaflet-control-attribution {
+  background-color: var(--bg-surface) !important;
+  border-radius: var(--radius-sm) !important;
+  font-size: var(--text-xs) !important;
+  color: var(--text-tertiary) !important;
+  font-family: var(--font-sans) !important;
 }

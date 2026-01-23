@@ -2,21 +2,8 @@
  * Alert viewer component showing health alerts for olive groves
  */
 import { format } from 'date-fns';
+import { getAlertColor } from '../design-system';
 import './AlertViewer.css';
-
-const getSeverityColor = (severity) => {
-  switch (severity.toLowerCase()) {
-    case 'critical':
-      return '#ef4444'; // Red
-    case 'high':
-      return '#f97316'; // Orange
-    case 'medium':
-    case 'warning':
-      return '#eab308'; // Yellow
-    default:
-      return '#3b82f6'; // Blue
-  }
-};
 
 const getSeverityIcon = (severity) => {
   switch (severity.toLowerCase()) {
@@ -61,7 +48,7 @@ const AlertViewer = ({ alerts }) => {
           <div
             key={alert.id}
             className="alert-item"
-            style={{ borderLeftColor: getSeverityColor(alert.severity) }}
+            style={{ borderLeftColor: getAlertColor(alert.severity) }}
           >
             <div className="alert-icon">
               {getSeverityIcon(alert.severity)}
@@ -71,7 +58,7 @@ const AlertViewer = ({ alerts }) => {
                 <h3>{alert.title}</h3>
                 <span
                   className="alert-severity-badge"
-                  style={{ backgroundColor: getSeverityColor(alert.severity) + '20', color: getSeverityColor(alert.severity) }}
+                  style={{ backgroundColor: getAlertColor(alert.severity) + '20', color: getAlertColor(alert.severity) }}
                 >
                   {alert.severity}
                 </span>
@@ -94,7 +81,7 @@ const AlertViewer = ({ alerts }) => {
         if (severityAlerts.length === 0) return null;
         return (
           <div key={severity} className="alert-summary-item">
-            <span style={{ color: getSeverityColor(severity) }}>
+            <span style={{ color: getAlertColor(severity) }}>
               {getSeverityIcon(severity)} {severityAlerts.length} {severity}
             </span>
           </div>

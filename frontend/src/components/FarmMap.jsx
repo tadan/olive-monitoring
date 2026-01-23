@@ -4,25 +4,8 @@
 import { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, GeoJSON, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import { getHealthColor, getHealthBorderColor } from '../design-system';
 import './FarmMap.css';
-
-// Health score color mapping
-const getHealthColor = (score) => {
-  if (!score || score === 0) return '#94a3b8'; // Gray - No data
-  if (score >= 70) return '#22c55e'; // Green - Healthy
-  if (score >= 50) return '#eab308'; // Yellow - Warning
-  if (score >= 30) return '#f97316'; // Orange - Poor
-  return '#ef4444'; // Red - Critical
-};
-
-// Border color - darker version for visibility
-const getBorderColor = (score) => {
-  if (!score || score === 0) return '#475569'; // Dark gray - No data
-  if (score >= 70) return '#15803d'; // Dark green
-  if (score >= 50) return '#a16207'; // Dark yellow
-  if (score >= 30) return '#c2410c'; // Dark orange
-  return '#b91c1c'; // Dark red
-};
 
 const FarmMap = ({ zones, healthData }) => {
   const mapRef = useRef(null);
@@ -82,7 +65,7 @@ const FarmMap = ({ zones, healthData }) => {
               style={{
                 fillColor: getHealthColor(healthScore),
                 fillOpacity: 0.5,
-                color: getBorderColor(healthScore),
+                color: getHealthBorderColor(healthScore),
                 weight: 3,
                 opacity: 1,
               }}
