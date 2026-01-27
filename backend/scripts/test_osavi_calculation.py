@@ -18,7 +18,8 @@ from app.database import get_session_local
 from app.models import SatelliteImage, FieldZone, HealthIndex
 from app.image_processor import ImageProcessor
 
-db = next(get_session_local())
+SessionLocal = get_session_local()
+db = SessionLocal()
 
 # Find the Jan 26 image
 image = db.query(SatelliteImage).filter(
@@ -76,3 +77,5 @@ if image:
         print('Zone 2 not found')
 else:
     print('No image found for 2026-01-26')
+
+db.close()
