@@ -1,9 +1,22 @@
 """Test script to verify OSAVI calculation for Jan 26, 2026 data."""
-from app.database import get_session_local
-from app.models import SatelliteImage, FieldZone
-from app.image_processor import ImageProcessor
-from datetime import date
+import sys
 from pathlib import Path
+from datetime import date
+
+# Add app directory to path (works both locally and in Docker)
+script_dir = Path(__file__).parent
+project_root = script_dir.parent
+
+# Check if we're in Docker (app directory at /app)
+if Path("/app/app").exists():
+    sys.path.insert(0, "/app")
+else:
+    # Running locally
+    sys.path.insert(0, str(project_root / "backend"))
+
+from app.database import get_session_local
+from app.models import SatelliteImage, FieldZone, HealthIndex
+from app.image_processor import ImageProcessor
 
 db = next(get_session_local())
 
@@ -47,7 +60,6 @@ if image:
                     print(f'Difference: {abs(float(osavi.mean()) - float(ndvi.mean())):.6f}')
                     print('')
                     print('DATABASE VALUES:')
-                    from app.models import HealthIndex
                     db_record = db.query(HealthIndex).filter(
                         HealthIndex.zone_id == 2,
                         HealthIndex.acquisition_date == date(2026, 1, 26)
