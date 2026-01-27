@@ -174,6 +174,10 @@ class ImageProcessor:
                     band_data = band_data.astype(np.float32)
                     band_data[band_data == 0] = np.nan
 
+                    # Normalize to reflectance (Sentinel-2 L2A scale factor = 10000)
+                    # Converts Digital Numbers (0-10000) to reflectance (0-1)
+                    band_data = band_data / 10000.0
+
                     bands[band_key] = band_data
 
                     # Use first band (Red) as reference for resampling
@@ -221,6 +225,9 @@ class ImageProcessor:
 
                 # Convert nodata values to NaN
                 band_data_10m[band_data_10m == 0] = np.nan
+
+                # Normalize to reflectance (Sentinel-2 L2A scale factor = 10000)
+                band_data_10m = band_data_10m / 10000.0
 
                 bands[band_key] = band_data_10m
                 logger.debug(f"Resampled {band_key} from {band_data_20m.shape} to {band_data_10m.shape}")
