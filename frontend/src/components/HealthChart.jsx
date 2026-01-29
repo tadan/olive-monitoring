@@ -65,6 +65,26 @@ const HealthChart = ({ healthData }) => {
         yAxisID: 'y',
       },
       {
+        label: 'ARVI',
+        data: sortedData.map(d => d.arvi_mean ? d.arvi_mean * 100 : null), // Scale ARVI to 0-100
+        borderColor: resolveColor(ChartColors.arvi),
+        backgroundColor: colorWithOpacity(ChartColors.arvi, 0.1),
+        fill: true,
+        tension: 0.4,
+        yAxisID: 'y',
+        spanGaps: true, // Connect line across null values
+      },
+      {
+        label: 'OSAVI',
+        data: sortedData.map(d => d.osavi_mean ? d.osavi_mean * 100 : null), // Scale OSAVI to 0-100
+        borderColor: resolveColor(ChartColors.osavi),
+        backgroundColor: colorWithOpacity(ChartColors.osavi, 0.1),
+        fill: true,
+        tension: 0.4,
+        yAxisID: 'y',
+        spanGaps: true, // Connect line across null values
+      },
+      {
         label: 'NDMI',
         data: sortedData.map(d => d.ndmi_mean * 100), // Scale NDMI to 0-100
         borderColor: resolveColor(ChartColors.ndmi),
