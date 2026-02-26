@@ -20,6 +20,7 @@ import './Dashboard.css'
 const FARMS = [
     { id: 'olive', name: "Cuppino's Olive Farm", location: 'Abruzzo, Italy' },
     { id: 'ridgedale', name: 'Ridgedale Farm', location: 'Sweden' },
+    { id: 'garden', name: 'Irisgatan Garden', location: 'Malmö, Sweden' },
 ]
 
 const Dashboard = () => {
@@ -62,12 +63,14 @@ const Dashboard = () => {
     // Filter zones by selected farm
     const getFilteredZones = () => {
         return zones.filter((zone) => {
-            // Ridgedale zones have "Ridgedale" in the name
             if (selectedFarm === 'ridgedale') {
                 return zone.name.includes('Ridgedale')
             }
-            // Olive zones don't have "Ridgedale" in the name
-            return !zone.name.includes('Ridgedale')
+            if (selectedFarm === 'garden') {
+                return zone.name.includes('Irisgatan')
+            }
+            // Olive zones don't have "Ridgedale" or "Irisgatan" in the name
+            return !zone.name.includes('Ridgedale') && !zone.name.includes('Irisgatan')
         })
     }
 

@@ -35,14 +35,14 @@ const FarmMap = ({ zones, healthData }) => {
     );
   }
 
-  // Detect if this is Ridgedale Farm (Swedish coordinates)
+  // Detect farm type from zone names
   const isRidgedale = zones.some(zone => zone.name.includes('Ridgedale'));
+  const isGarden = zones.some(zone => zone.name.includes('Irisgatan'));
 
   // Calculate map center and zoom based on farm type
   let mapCenter, mapZoom;
 
-  if (isRidgedale) {
-    // Ridgedale Farm - show actual location (public farm)
+  if (isRidgedale || isGarden) {
     // Calculate center from zone geometries
     const coords = zones[0].geometry.coordinates[0];
     const lats = coords.map(c => c[1]);
@@ -50,7 +50,7 @@ const FarmMap = ({ zones, healthData }) => {
     const centerLat = (Math.min(...lats) + Math.max(...lats)) / 2;
     const centerLng = (Math.min(...lngs) + Math.max(...lngs)) / 2;
     mapCenter = [centerLat, centerLng];
-    mapZoom = 15; // Zoomed in to show farm
+    mapZoom = isGarden ? 18 : 15; // Garden needs higher zoom (small area)
   } else {
     // Olive farm - show Abruzzo region (for privacy)
     mapCenter = [42.35, 13.39];
