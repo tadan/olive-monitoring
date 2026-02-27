@@ -1,8 +1,8 @@
 # Olive Farm Satellite Monitoring - Claude Code Context
 
-**Project:** Satellite-based monitoring system for Tatasciore Olive Farm (Abruzzo, Italy)
-**Status:** Phase 1 Complete ✅ | Phase 2 Complete ✅ | Phase 3 Complete ✅ | Historical Analysis ✅ | Enhanced Indices ✅
-**Last Updated:** 2026-01-15
+**Project:** Satellite-based monitoring system for Tatasciore Olive Farm (Abruzzo, Italy) + Irisgatan Garden (Malmö, Sweden)
+**Status:** Phase 1 Complete ✅ | Phase 2 Complete ✅ | Phase 3 Complete ✅ | Historical Analysis ✅ | Enhanced Indices ✅ | Malmö Garden Zone ✅
+**Last Updated:** 2026-02-27
 **Location:** /Users/danieletatasciore/Documents/repos/claude/olive-monitoring
 **Live Dashboard:** https://farms.daniele.is
 
@@ -10,18 +10,25 @@
 
 ## Project Overview
 
-A self-hosted satellite monitoring portal that automatically tracks olive grove health using free Copernicus Sentinel-2 satellite data. The system runs on a Synology DS716+II NAS in Sweden (remote from the Italian farm), processes imagery every 5 days, and provides a public dashboard for transparency with Swedish customers.
+A self-hosted satellite monitoring portal that tracks vegetation health using free Copernicus Sentinel-2 satellite data. The system runs on a Synology DS716+II NAS in Sweden, processes imagery every 5 days, and provides a public dashboard. Expanding to include IoT sensor integration for the Malmö garden.
 
-**Farm Details:**
-- **Name:** Tatasciore Olive Farm
-- **Location:** Abruzzo, Italy (42.303°N, 14.187°E)
+**Monitored Locations:**
+
+**1. Tatasciore Olive Farm (Abruzzo, Italy)**
+- **GPS:** 42.303°N, 14.187°E
 - **Total Area:** 1.00 hectare across 3 zones
 - **Varieties:** Frantoio, Leccino
+- **Zones:**
+  1. Below Natural - 0.33 ha (ID: 5)
+  2. Below Falling Houses - 0.35 ha (ID: 6)
+  3. House - 0.32 ha (ID: 7)
 
-**Zones:**
-1. **Below Natural** - 0.33 ha (ID: 5)
-2. **Below Falling Houses** - 0.35 ha (ID: 6)
-3. **House** - 0.32 ha (ID: 7)
+**2. Irisgatan Garden (Malmö, Sweden)**
+- **GPS:** 55.573°N, 12.995°E
+- **Total Area:** 0.06 hectare (577 m², ~26m x 37m)
+- **KML Source:** `Irisgatan 14.kml`
+- **Purpose:** Satellite + IoT monitoring (ESP32 sensor integration planned)
+- **Status:** Zone added, awaiting first satellite pass and IoT hardware
 
 ---
 
@@ -174,6 +181,55 @@ curl http://localhost:8000/health                    # Direct to API (internal n
 ---
 
 ## Recent Sessions
+
+### Session 2026-02-27: Malmö Garden Zone + ARVI/OSAVI Chart Fix
+
+**Accomplishments:**
+1. Parsed `Irisgatan 14.kml` and added Malmö garden as 4th monitoring zone (577 m², 0.06 ha)
+2. Added "Irisgatan Garden" tab to dashboard farm selector
+3. Updated FarmMap to auto-center on garden at zoom 18
+4. Created idempotent SQL migration (`migrate_add_garden_zone.sql`) that safely adds zone without deleting existing data
+5. Added ARVI and OSAVI datasets to HealthChart with inline hex colors (amber + red)
+6. Fixed `resolveColor is not defined` runtime error caused by cherry-picking design-system-dependent code onto main
+
+**Key Decisions:**
+- Used SQL migration instead of `load_field_zones.py` (which deletes all zones and would cascade-delete health data)
+- Used inline hex colors for chart datasets instead of design-system CSS variables (main branch doesn't have design-system.js)
+- Garden zone filtered by `zone.name.includes('Irisgatan')` in Dashboard (matches existing Ridgedale pattern)
+
+**Files Modified:**
+- `backend/config/field_zones.json` - Added Irisgatan Garden zone with GeoJSON polygon
+- `backend/scripts/migrate_add_garden_zone.sql` - NEW: Idempotent SQL migration
+- `frontend/src/components/Dashboard.jsx` - Added garden tab, updated zone filtering
+- `frontend/src/components/FarmMap.jsx` - Garden detection, zoom level 18
+- `frontend/src/components/HealthChart.jsx` - Added ARVI (amber) and OSAVI (red) datasets
+
+**NAS Deployment Notes:**
+- NAS was on `feature/design-system-normalization` branch, had to `git reset --hard origin/main`
+- Cherry-picked `0cea2eb` and `519f0f1` from feature branch for ARVI chart + reprocessing scripts
+- Cherry-pick brought in `resolveColor` dependency that doesn't exist on main -> fixed with inline colors
+- NAS git identity configured: `git config user.email/name` (was missing)
+
+**IoT Integration Planning:**
+- Recommended ESP32-S3 DevKitC-1 for garden sensor hub
+- Sensors planned: BME280 (temp/humidity/pressure), BH1750 (light), Capacitive Soil Moisture v2.0
+- Raspberry Pi 2 Model B v1.1 available as MQTT gateway
+- User has AZ-Delivery sensor kit with soil moisture, rain, DHT11, DS18B20
+- Architecture: ESP32 -> Raspberry Pi (MQTT) -> NAS (PostgreSQL/FastAPI)
+
+**Git Commits:**
+- `d6f6656` feat: Add Irisgatan Garden zone for Malmö satellite + IoT monitoring
+- `fcee6b1` feat: Add ARVI and OSAVI to health trends chart
+
+**Next Steps:**
+1. Deploy to NAS: `git pull`, run migration, rebuild frontend
+2. Configure satellite processor to fetch Sentinel-2 tile T33UXB (Malmö area)
+3. Order ESP32-S3 + sensors (BME280, Capacitive Soil v2.0, BH1750)
+4. Install Mosquitto MQTT broker on Raspberry Pi 2
+5. Design IoT database schema (iot_sensors, iot_readings tables)
+6. Build IoT API endpoints (POST /api/iot/readings, GET /api/zones/{id}/iot)
+
+---
 
 ### Session 2026-01-15: ARVI and OSAVI Vegetation Indices Implementation
 
