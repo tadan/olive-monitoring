@@ -153,9 +153,9 @@ const Dashboard = () => {
         <div className='dashboard'>
             <header className='dashboard-header'>
                 <div className='header-content'>
-                    <h1>🛰️ Farm Health Monitoring</h1>
+                    <h1>Farm Health Monitoring</h1>
                     <p>
-                        Real-time satellite health monitoring via Sentinel-2
+                        Sentinel-2 Satellite • 10m Resolution • 5-Day Revisit
                     </p>
                 </div>
                 <div className='header-stats'>
@@ -185,13 +185,15 @@ const Dashboard = () => {
                 </div>
             </header>
 
-            <FarmSelector
-                farms={FARMS}
-                selectedFarm={selectedFarm}
-                onSelectFarm={setSelectedFarm}
-            />
+            <nav aria-label="Farm selection">
+                <FarmSelector
+                    farms={FARMS}
+                    selectedFarm={selectedFarm}
+                    onSelectFarm={setSelectedFarm}
+                />
+            </nav>
 
-            <div className='dashboard-content'>
+            <main className='dashboard-content'>
                 <div className='left-panel'>
                     <section className='map-section'>
                         <FarmMap zones={filteredZones} healthData={summaryByZone} />
@@ -199,12 +201,15 @@ const Dashboard = () => {
 
                     {filteredZones.length > 0 ? (
                         <>
-                            <section className='zone-selector'>
-                                <h3>Select Zone</h3>
-                                <div className='zone-buttons'>
+                            <section className='zone-selector' aria-labelledby="zone-selector-heading">
+                                <h3 id="zone-selector-heading">Select Zone</h3>
+                                <div className='zone-buttons' role="tablist" aria-label="Farm zones">
                                     {filteredZones.map((zone) => (
                                         <button
                                             key={zone.id}
+                                            role="tab"
+                                            aria-selected={selectedZone === zone.id}
+                                            aria-controls={`zone-panel-${zone.id}`}
                                             className={`zone-button ${
                                                 selectedZone === zone.id ? 'active' : ''
                                             }`}
@@ -241,9 +246,9 @@ const Dashboard = () => {
                             </section>
                         </>
                     ) : (
-                        <section className='no-data-message'>
+                        <section className='no-data-message' aria-label="No data available">
                             <div className='message-box'>
-                                <h3>📊 No Data Available</h3>
+                                <h3>No Data Available</h3>
                                 <p>
                                     No zones found for {currentFarm?.name}.
                                     Please add zones to see health monitoring data.
@@ -253,7 +258,7 @@ const Dashboard = () => {
                     )}
                 </div>
 
-                <div className='right-panel'>
+                <aside className='right-panel' aria-label="Zone information and alerts">
                     <section className='alerts-section'>
                         <AlertViewer alerts={alerts} />
                     </section>
@@ -312,13 +317,12 @@ const Dashboard = () => {
                             </div>
                         </section>
                     )}
-                </div>
-            </div>
+                </aside>
+            </main>
 
             <footer className='dashboard-footer'>
                 <p>
-                    Data from Sentinel-2 satellites • Updated every 5 days •
-                    Powered by Copernicus
+                    Data: Sentinel-2 ESA • Resolution: 10m • Revisit: 5 Days • Source: Copernicus Programme
                 </p>
             </footer>
         </div>

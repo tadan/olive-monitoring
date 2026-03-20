@@ -13,6 +13,20 @@ import {
 } from 'chart.js';
 import './HistoricalChart.css';
 
+// Design System Colors (Chart.js needs hex values, not CSS vars)
+const CHART_COLORS = {
+  success: '#2da44e',
+  successBorder: '#2da44e',
+  warning: 'rgba(191, 135, 0, 0.7)',
+  warningBorder: '#bf8700',
+  danger: 'rgba(207, 34, 46, 0.7)',
+  dangerBorder: '#cf222e',
+  info: 'rgba(9, 105, 218, 0.7)',
+  infoBorder: '#0969da',
+  neutral: 'rgba(173, 181, 189, 0.3)',
+  neutralBorder: 'rgba(173, 181, 189, 0.5)',
+};
+
 // Register Chart.js components
 ChartJS.register(
   CategoryScale,
@@ -59,18 +73,18 @@ const HistoricalChart = ({ historyData }) => {
         label: 'Health Score',
         data: history.map((h) => (h.has_data ? h.health_score : null)),
         backgroundColor: history.map((h) => {
-          if (!h.has_data) return 'rgba(200, 200, 200, 0.3)';
-          if (h.trend === 'improving') return 'rgba(34, 197, 94, 0.7)';
-          if (h.trend === 'declining') return 'rgba(239, 68, 68, 0.7)';
-          if (h.trend === 'stable') return 'rgba(234, 179, 8, 0.7)';
-          return 'rgba(59, 130, 246, 0.7)'; // baseline
+          if (!h.has_data) return CHART_COLORS.neutral;
+          if (h.trend === 'improving') return CHART_COLORS.success;
+          if (h.trend === 'declining') return CHART_COLORS.danger;
+          if (h.trend === 'stable') return CHART_COLORS.warning;
+          return CHART_COLORS.info; // baseline
         }),
         borderColor: history.map((h) => {
-          if (!h.has_data) return 'rgba(200, 200, 200, 0.5)';
-          if (h.trend === 'improving') return 'rgba(34, 197, 94, 1)';
-          if (h.trend === 'declining') return 'rgba(239, 68, 68, 1)';
-          if (h.trend === 'stable') return 'rgba(234, 179, 8, 1)';
-          return 'rgba(59, 130, 246, 1)';
+          if (!h.has_data) return CHART_COLORS.neutralBorder;
+          if (h.trend === 'improving') return CHART_COLORS.successBorder;
+          if (h.trend === 'declining') return CHART_COLORS.dangerBorder;
+          if (h.trend === 'stable') return CHART_COLORS.warningBorder;
+          return CHART_COLORS.infoBorder;
         }),
         borderWidth: 2,
       },
@@ -143,9 +157,9 @@ const HistoricalChart = ({ historyData }) => {
   };
 
   return (
-    <div className='historical-chart-container'>
+    <div className='historical-chart-container' role="img" aria-label={`Year-over-year health analysis for ${zone_name} from ${year_range}`}>
       <Bar data={chartData} options={options} />
-      <div className='historical-legend'>
+      <div className='historical-legend' role="list" aria-label="Trend indicators">
         <div className='legend-item'>
           <span className='legend-icon improving'>↗️</span>
           <span>Improving (+5 or more)</span>

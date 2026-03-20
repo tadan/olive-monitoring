@@ -29,8 +29,8 @@ const FarmMap = ({ zones, healthData }) => {
 
   if (!zones || zones.length === 0) {
     return (
-      <div className="farm-map-placeholder">
-        <p>Loading map...</p>
+      <div className="farm-map-placeholder" role="status" aria-live="polite">
+        <p>Loading map data...</p>
       </div>
     );
   }
@@ -58,13 +58,14 @@ const FarmMap = ({ zones, healthData }) => {
   }
 
   return (
-    <div className="farm-map-container">
+    <div className="farm-map-container" role="region" aria-label="Farm zones map visualization">
       <MapContainer
         center={mapCenter}
         zoom={mapZoom}
         style={{ height: '100%', width: '100%' }}
         ref={mapRef}
         key={`${mapCenter[0]}-${mapCenter[1]}`} // Force remount when center changes
+        aria-label="Interactive map of monitored farm zones"
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

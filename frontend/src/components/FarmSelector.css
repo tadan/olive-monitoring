@@ -1,54 +1,94 @@
+/**
+ * FARM SELECTOR - Tab Navigation
+ */
+
 .farm-selector {
-    margin-bottom: 2rem;
-    padding: 0 1rem;
+    margin-bottom: var(--space-6);
+    padding: 0 var(--space-6);
 }
 
 .farm-tabs {
     display: flex;
-    gap: 1rem;
-    border-bottom: 2px solid #e5e7eb;
+    gap: 0;
+    border-bottom: var(--border-width-thick) var(--border-style) var(--color-border);
 }
 
 .farm-tab {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: 1rem 1.5rem;
+    padding: var(--space-4) var(--space-5);
     background: transparent;
     border: none;
     border-bottom: 3px solid transparent;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--duration-base) var(--ease-out);
     position: relative;
     bottom: -2px;
 }
 
 .farm-tab:hover {
-    background: #f9fafb;
-    border-bottom-color: #d1d5db;
+    background: var(--color-neutral-100);
+    border-bottom-color: var(--color-neutral-300);
 }
 
 .farm-tab.active {
-    background: #f0fdf4;
-    border-bottom-color: #22c55e;
+    background: var(--color-data-subtle);
+    border-bottom-color: var(--color-data);
 }
 
 .farm-tab .farm-name {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #1f2937;
-    margin-bottom: 0.25rem;
+    font-family: var(--font-display);
+    font-size: var(--font-size-md);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-neutral-900);
+    margin-bottom: var(--space-1);
+    letter-spacing: var(--letter-spacing-tight);
 }
 
 .farm-tab .farm-location {
-    font-size: 0.875rem;
-    color: #6b7280;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    color: var(--color-neutral-500);
+    text-transform: uppercase;
+    letter-spacing: var(--letter-spacing-wide);
 }
 
 .farm-tab.active .farm-name {
-    color: #16a34a;
+    color: var(--color-data-dark);
 }
 
 .farm-tab.active .farm-location {
-    color: #15803d;
+    color: var(--color-data);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .farm-selector {
+        padding: 0 var(--space-4);
+    }
+
+    .farm-tabs {
+        flex-direction: column;
+        border-bottom: none;
+        border-left: var(--border-width-thick) var(--border-style) var(--color-border);
+    }
+
+    .farm-tab {
+        border-bottom: none;
+        border-left: 3px solid transparent;
+        bottom: 0;
+        left: -2px;
+    }
+
+    .farm-tab:hover {
+        border-left-color: var(--color-neutral-300);
+    }
+
+    .farm-tab.active {
+        border-left-color: var(--color-data);
+    }
 }

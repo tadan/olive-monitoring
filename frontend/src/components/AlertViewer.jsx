@@ -21,22 +21,22 @@ const getSeverityColor = (severity) => {
 const getSeverityIcon = (severity) => {
   switch (severity.toLowerCase()) {
     case 'critical':
-      return '🚨';
+      return '!';
     case 'high':
-      return '⚠️';
+      return '!';
     case 'medium':
     case 'warning':
-      return '⚡';
+      return '!';
     default:
-      return 'ℹ️';
+      return 'i';
   }
 };
 
 const AlertViewer = ({ alerts }) => {
   if (!alerts || alerts.length === 0) {
     return (
-      <div className="alert-viewer-container">
-        <h2>🎉 All Clear</h2>
+      <div className="alert-viewer-container" role="status" aria-live="polite">
+        <h2>All Clear</h2>
         <p>No active alerts for your olive groves</p>
       </div>
     );
@@ -51,19 +51,21 @@ const AlertViewer = ({ alerts }) => {
   };
 
   return (
-    <div className="alert-viewer-container">
+    <div className="alert-viewer-container" role="region" aria-labelledby="alerts-heading">
       <div className="alert-header">
-        <h2>Active Alerts ({alerts.length})</h2>
+        <h2 id="alerts-heading">Active Alerts ({alerts.length})</h2>
       </div>
 
-      <div className="alert-list">
+      <div className="alert-list" role="list">
         {alerts.map((alert) => (
           <div
             key={alert.id}
             className="alert-item"
+            role="listitem"
             style={{ borderLeftColor: getSeverityColor(alert.severity) }}
+            aria-label={`${alert.severity} alert: ${alert.title}`}
           >
-            <div className="alert-icon">
+            <div className="alert-icon" aria-hidden="true">
               {getSeverityIcon(alert.severity)}
             </div>
             <div className="alert-content">

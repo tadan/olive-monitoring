@@ -16,6 +16,20 @@ import {
 import { format } from 'date-fns';
 import './HealthChart.css';
 
+// Design System Colors (Chart.js needs hex values, not CSS vars)
+const CHART_COLORS = {
+  success: '#2da44e',
+  successBg: 'rgba(45, 164, 78, 0.1)',
+  data: '#0969da',
+  dataBg: 'rgba(9, 105, 218, 0.1)',
+  warning: '#bf8700',
+  warningBg: 'rgba(191, 135, 0, 0.1)',
+  danger: '#cf222e',
+  dangerBg: 'rgba(207, 34, 46, 0.1)',
+  info: '#8b5cf6',
+  infoBg: 'rgba(139, 92, 246, 0.1)',
+};
+
 // Register Chart.js components
 ChartJS.register(
   CategoryScale,
@@ -31,7 +45,7 @@ ChartJS.register(
 const HealthChart = ({ healthData }) => {
   if (!healthData || healthData.length === 0) {
     return (
-      <div className="health-chart-placeholder">
+      <div className="health-chart-placeholder" role="status" aria-live="polite">
         <p>No health data available</p>
       </div>
     );
@@ -48,48 +62,48 @@ const HealthChart = ({ healthData }) => {
       {
         label: 'Health Score',
         data: sortedData.map(d => d.health_score),
-        borderColor: '#22c55e',
-        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+        borderColor: CHART_COLORS.success,
+        backgroundColor: CHART_COLORS.successBg,
         fill: true,
-        tension: 0.4,
+        tension: 0.3,
         yAxisID: 'y',
       },
       {
         label: 'NDVI',
         data: sortedData.map(d => d.ndvi_mean * 100), // Scale NDVI to 0-100
-        borderColor: '#3b82f6',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        borderColor: CHART_COLORS.data,
+        backgroundColor: CHART_COLORS.dataBg,
         fill: true,
-        tension: 0.4,
+        tension: 0.3,
         yAxisID: 'y',
       },
       {
         label: 'ARVI',
         data: sortedData.map(d => d.arvi_mean ? d.arvi_mean * 100 : null),
-        borderColor: '#f59e0b',
-        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+        borderColor: CHART_COLORS.warning,
+        backgroundColor: CHART_COLORS.warningBg,
         fill: true,
-        tension: 0.4,
+        tension: 0.3,
         yAxisID: 'y',
         spanGaps: true,
       },
       {
         label: 'OSAVI',
         data: sortedData.map(d => d.osavi_mean ? d.osavi_mean * 100 : null),
-        borderColor: '#ef4444',
-        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        borderColor: CHART_COLORS.danger,
+        backgroundColor: CHART_COLORS.dangerBg,
         fill: true,
-        tension: 0.4,
+        tension: 0.3,
         yAxisID: 'y',
         spanGaps: true,
       },
       {
         label: 'NDMI',
         data: sortedData.map(d => d.ndmi_mean * 100), // Scale NDMI to 0-100
-        borderColor: '#8b5cf6',
-        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+        borderColor: CHART_COLORS.info,
+        backgroundColor: CHART_COLORS.infoBg,
         fill: true,
-        tension: 0.4,
+        tension: 0.3,
         yAxisID: 'y',
       },
     ],
@@ -153,7 +167,7 @@ const HealthChart = ({ healthData }) => {
   };
 
   return (
-    <div className="health-chart-container">
+    <div className="health-chart-container" role="img" aria-label="Time series chart showing olive grove health metrics over the past 30 days">
       <Line data={chartData} options={options} />
     </div>
   );

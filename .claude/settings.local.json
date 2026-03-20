@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(textutil:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Skill(close-session)",
+      "Bash(wc:*)",
+      "Bash(tree:*)",
+      "Skill(impeccable:audit)",
+      "Skill(impeccable:frontend-design)",
+      "Bash(git checkout:*)",
+      "Bash(git config:*)",
+      "Bash(ssh daniele@NAS_Irisgatan \"cd /volume1/docker/olive-monitoring && docker-compose logs processor --tail 100\")",
+      "Bash(ssh:*)"
+    ]
+  }
+}
