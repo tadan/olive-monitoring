@@ -19,8 +19,8 @@ import './Dashboard.css'
 // Define farms for comparison
 const FARMS = [
     { id: 'olive', name: "Cuppino's Olive Farm", location: 'Abruzzo, Italy' },
-    { id: 'ridgedale', name: 'Ridgedale Farm', location: 'Sweden' },
-    { id: 'garden', name: 'Irisgatan Garden', location: 'Malmö, Sweden' },
+    { id: 'ruzzi', name: 'Ruzzi Family Farm', location: 'Abruzzo, Italy' },
+    { id: 'ruzzi-aunt', name: "Ruzzi Aunt's Farm", location: 'Abruzzo, Italy' },
 ]
 
 const Dashboard = () => {
@@ -63,14 +63,15 @@ const Dashboard = () => {
     // Filter zones by selected farm
     const getFilteredZones = () => {
         return zones.filter((zone) => {
-            if (selectedFarm === 'ridgedale') {
-                return zone.name.includes('Ridgedale')
+            if (selectedFarm === 'ruzzi') {
+                // Ruzzi farm: zones with "Ruzzi -" or "Ruzzi Home" (NOT "Ruzzi Aunt")
+                return zone.name.startsWith('Ruzzi - ') || zone.name === 'Ruzzi Home'
             }
-            if (selectedFarm === 'garden') {
-                return zone.name.includes('Irisgatan')
+            if (selectedFarm === 'ruzzi-aunt') {
+                return zone.name.includes('Ruzzi Aunt')
             }
-            // Olive zones don't have "Ridgedale" or "Irisgatan" in the name
-            return !zone.name.includes('Ridgedale') && !zone.name.includes('Irisgatan')
+            // Cuppino's Olive Farm: original zones (Below Natural, Below Falling Houses, House)
+            return !zone.name.includes('Ruzzi')
         })
     }
 

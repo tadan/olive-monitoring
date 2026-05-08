@@ -35,27 +35,9 @@ const FarmMap = ({ zones, healthData }) => {
     );
   }
 
-  // Detect farm type from zone names
-  const isRidgedale = zones.some(zone => zone.name.includes('Ridgedale'));
-  const isGarden = zones.some(zone => zone.name.includes('Irisgatan'));
-
-  // Calculate map center and zoom based on farm type
-  let mapCenter, mapZoom;
-
-  if (isRidgedale || isGarden) {
-    // Calculate center from zone geometries
-    const coords = zones[0].geometry.coordinates[0];
-    const lats = coords.map(c => c[1]);
-    const lngs = coords.map(c => c[0]);
-    const centerLat = (Math.min(...lats) + Math.max(...lats)) / 2;
-    const centerLng = (Math.min(...lngs) + Math.max(...lngs)) / 2;
-    mapCenter = [centerLat, centerLng];
-    mapZoom = isGarden ? 18 : 15; // Garden needs higher zoom (small area)
-  } else {
-    // Olive farm - show Abruzzo region (for privacy)
-    mapCenter = [42.35, 13.39];
-    mapZoom = 9;
-  }
+  // Map center for Italian olive farms (Cuppino and Ruzzi areas)
+  const mapCenter = [42.305, 14.185];
+  const mapZoom = 15;
 
   return (
     <div className="farm-map-container" role="region" aria-label="Farm zones map visualization">
