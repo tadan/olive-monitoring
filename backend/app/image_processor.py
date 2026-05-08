@@ -36,6 +36,12 @@ class ImageProcessor:
         'swir': 'B11'      # Shortwave infrared (20m resolution)
     }
 
+    # SCL classes to mask (clouds, shadows, cirrus)
+    SCL_MASK_CLASSES = {3, 8, 9, 10}  # cloud shadow, cloud medium/high prob, thin cirrus
+
+    # Skip observation if more than this fraction of pixels are cloudy
+    MAX_CLOUD_FRACTION = 0.5
+
     def __init__(self, data_dir: Optional[Path] = None):
         """
         Initialize the image processor.
@@ -110,19 +116,84 @@ class ImageProcessor:
         logger.warning(f"Band {band_name} not found in {product_path}")
         return None
 
+    def extract_cloud_mask(
+        self,
+        product_path: Path,
+        zone_geometry: Dict,
+        reference_shape: Tuple,
+        reference_transform,
+        reference_crs
+    ) -> Optional[np.ndarray]:
+        """
+        Extract the SCL (Scene Classification Layer) band and build a boolean cloud mask.
+
+        SCL classes masked: 3 (cloud shadow), 8 (cloud medium), 9 (cloud high), 10 (thin cirrus)
+
+        Args:
+            product_path: Path to .SAFE directory
+            zone_geometry: GeoJSON geometry
+            reference_shape: Target shape (10m grid)
+            reference_transform: Target affine transform
+            reference_crs: Target CRS
+
+        Returns:
+            Boolean array (True = cloudy pixel to exclude), or None if SCL not found
+        """
+        scl_file = self.find_band_file(product_path, 'SCL')
+        if scl_file is None:
+            logger.warning("SCL band not found — skipping cloud masking")
+            return None
+
+        from rasterio.warp import transform_geom, reproject, Resampling
+
+        with rasterio.open(scl_file) as src:
+            geom_transformed = transform_geom('EPSG:4326', src.crs, zone_geometry)
+            geom_in_raster_crs = shape(geom_transformed)
+
+            out_image, out_transform = mask(src, [geom_in_raster_crs], crop=True, nodata=0)
+            scl_20m = out_image[0].astype(np.float32)
+
+            # Resample SCL from 20m to 10m using nearest-neighbor (classification data)
+            scl_10m = np.zeros(reference_shape, dtype=np.float32)
+            reproject(
+                source=scl_20m,
+                destination=scl_10m,
+                src_transform=out_transform,
+                src_crs=src.crs,
+                dst_transform=reference_transform,
+                dst_crs=reference_crs,
+                resampling=Resampling.nearest
+            )
+
+        cloud_mask = np.isin(scl_10m.astype(np.uint8), list(self.SCL_MASK_CLASSES))
+
+        total_pixels = cloud_mask.size
+        cloudy_pixels = int(np.sum(cloud_mask))
+        cloud_fraction = cloudy_pixels / total_pixels if total_pixels > 0 else 0
+
+        logger.info(
+            f"Cloud mask: {cloudy_pixels}/{total_pixels} pixels masked "
+            f"({cloud_fraction:.1%} cloudy)"
+        )
+
+        return cloud_mask
+
     def extract_bands(
         self,
         product_path: Path,
         zone_geometry: Dict
     ) -> Optional[Dict[str, np.ndarray]]:
         """
-        Extract and clip required bands for a zone.
+        Extract and clip required bands for a zone, with SCL cloud masking.
 
         Handles different band resolutions by resampling all bands to 10m resolution:
         - Blue (B02): 10m native
         - Red (B04): 10m native
         - NIR (B08): 10m native
         - SWIR (B11): 20m native → resampled to 10m
+
+        Cloud/shadow pixels identified by the SCL band are set to NaN.
+        If >50% of zone pixels are cloudy, the observation is skipped.
 
         Args:
             product_path: Path to Sentinel-2 product (.SAFE or .zip)
@@ -176,7 +247,7 @@ class ImageProcessor:
 
                     bands[band_key] = band_data
 
-                    # Use first band (Red) as reference for resampling
+                    # Use first band (Blue) as reference for resampling
                     if reference_shape is None:
                         reference_shape = band_data.shape
                         reference_transform = out_transform
@@ -224,6 +295,24 @@ class ImageProcessor:
 
                 bands[band_key] = band_data_10m
                 logger.debug(f"Resampled {band_key} from {band_data_20m.shape} to {band_data_10m.shape}")
+
+            # Apply SCL cloud mask to all bands
+            cloud_mask = self.extract_cloud_mask(
+                product_path, zone_geometry,
+                reference_shape, reference_transform, reference_crs
+            )
+
+            if cloud_mask is not None:
+                cloud_fraction = np.sum(cloud_mask) / cloud_mask.size
+                if cloud_fraction > self.MAX_CLOUD_FRACTION:
+                    logger.warning(
+                        f"Zone too cloudy ({cloud_fraction:.1%} > {self.MAX_CLOUD_FRACTION:.0%}) "
+                        f"— skipping observation"
+                    )
+                    return None
+
+                for band_key in bands:
+                    bands[band_key][cloud_mask] = np.nan
 
             logger.info(f"Extracted {len(bands)} bands for zone (all {reference_shape})")
             return bands
