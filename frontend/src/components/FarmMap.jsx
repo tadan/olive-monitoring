@@ -37,7 +37,7 @@ const FitBounds = ({ zones }) => {
       coords.forEach(([lng, lat]) => bounds.extend([lat, lng]));
     });
 
-    map.fitBounds(bounds, { padding: [30, 30], maxZoom: 18 });
+    map.fitBounds(bounds, { padding: [5, 5], maxZoom: 19 });
   }, [zones, map]);
 
   return null;
