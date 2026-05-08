@@ -1,32 +1,49 @@
 /**
- * Interactive map showing farm zones
+ * Interactive satellite map showing farm zones
  */
 import { useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, GeoJSON, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, GeoJSON, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './FarmMap.css';
 
 // Health score color mapping
 const getHealthColor = (score) => {
-  if (!score || score === 0) return '#94a3b8'; // Gray - No data
-  if (score >= 70) return '#22c55e'; // Green - Healthy
-  if (score >= 50) return '#eab308'; // Yellow - Warning
-  if (score >= 30) return '#f97316'; // Orange - Poor
-  return '#ef4444'; // Red - Critical
+  if (!score || score === 0) return '#94a3b8';
+  if (score >= 70) return '#22c55e';
+  if (score >= 50) return '#eab308';
+  if (score >= 30) return '#f97316';
+  return '#ef4444';
 };
 
-// Border color - darker version for visibility
 const getBorderColor = (score) => {
-  if (!score || score === 0) return '#475569'; // Dark gray - No data
-  if (score >= 70) return '#15803d'; // Dark green
-  if (score >= 50) return '#a16207'; // Dark yellow
-  if (score >= 30) return '#c2410c'; // Dark orange
-  return '#b91c1c'; // Dark red
+  if (!score || score === 0) return '#475569';
+  if (score >= 70) return '#15803d';
+  if (score >= 50) return '#a16207';
+  if (score >= 30) return '#c2410c';
+  return '#b91c1c';
+};
+
+// Fit map bounds to displayed zones
+const FitBounds = ({ zones }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!zones || zones.length === 0) return;
+
+    const bounds = L.latLngBounds([]);
+    zones.forEach((zone) => {
+      const coords = zone.geometry.coordinates[0];
+      coords.forEach(([lng, lat]) => bounds.extend([lat, lng]));
+    });
+
+    map.fitBounds(bounds, { padding: [30, 30], maxZoom: 18 });
+  }, [zones, map]);
+
+  return null;
 };
 
 const FarmMap = ({ zones, healthData }) => {
-  const mapRef = useRef(null);
-
   if (!zones || zones.length === 0) {
     return (
       <div className="farm-map-placeholder" role="status" aria-live="polite">
@@ -35,24 +52,20 @@ const FarmMap = ({ zones, healthData }) => {
     );
   }
 
-  // Map center for Italian olive farms (Cuppino and Ruzzi areas)
-  const mapCenter = [42.305, 14.185];
-  const mapZoom = 15;
-
   return (
     <div className="farm-map-container" role="region" aria-label="Farm zones map visualization">
       <MapContainer
-        center={mapCenter}
-        zoom={mapZoom}
+        center={[42.305, 14.185]}
+        zoom={15}
         style={{ height: '100%', width: '100%' }}
-        ref={mapRef}
-        key={`${mapCenter[0]}-${mapCenter[1]}`} // Force remount when center changes
-        aria-label="Interactive map of monitored farm zones"
+        aria-label="Interactive satellite map of monitored farm zones"
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.esri.com/">Esri</a>'
+          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
         />
+
+        <FitBounds zones={zones} />
 
         {zones.map((zone) => {
           const zoneHealth = healthData[zone.id];
@@ -64,7 +77,7 @@ const FarmMap = ({ zones, healthData }) => {
               data={zone.geometry}
               style={{
                 fillColor: getHealthColor(healthScore),
-                fillOpacity: 0.5,
+                fillOpacity: 0.35,
                 color: getBorderColor(healthScore),
                 weight: 3,
                 opacity: 1,
