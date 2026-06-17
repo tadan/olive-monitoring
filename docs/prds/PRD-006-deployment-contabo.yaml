@@ -1,0 +1,42 @@
+id: PRD-006
+title: Deployment feasibility + Contabo/YunoHost production path
+status: draft
+priority: P1
+depends_on: [PRD-003]
+model: opus
+human_in_loop: false
+owner: autonomous
+problem: >
+  The app runs via docker-compose on the NAS (residential uplink, single point of failure) — fine for dev/demo,
+  not for serving customer tenants. A documented, reproducible production deploy on Contabo is needed, plus a clear
+  statement of where the NAS ceiling is, for ESA-BIC.
+goal: >
+  A written feasibility report + a working Contabo production deploy using Docker Compose + Caddy (auto-TLS).
+scope:
+  - "Report: NAS (dev/demo) vs Contabo (prod) — cost, scalability, reliability, GDPR/data-residency, and the exact point where the NAS stops being viable for multi-tenant."
+  - "Report: Caddy-Compose vs YunoHost-custom-app, with recommendation = Caddy-Compose (YunoHost optional/alongside)."
+  - "Implementation: production docker-compose override + Caddyfile (auto HTTPS), env templating, Postgres backups."
+  - "Deploy runbook (DEPLOYMENT.md update) for the Contabo VPS."
+out_of_scope:
+  - Migrating the satellite processor off the NAS (cover the ceiling in the report; actual move is a later PRD).
+  - Kubernetes / multi-node scaling (premature).
+deliverables:
+  - docs/deployment/feasibility-report.md (with cost table + NAS ceiling)
+  - docker-compose.prod.yml + Caddyfile
+  - updated DEPLOYMENT.md runbook for Contabo
+  - Postgres backup script/cron
+tasks:
+  - {id: T1, desc: "Write feasibility report incl. cost table + NAS-vs-Contabo ceiling + Caddy-vs-YunoHost recommendation", done: false}
+  - {id: T2, desc: "Author docker-compose.prod.yml + Caddyfile (auto-TLS, reverse proxy to api+frontend)", done: false}
+  - {id: T3, desc: "Add Postgres backup script + scheduling; document restore", done: false}
+  - {id: T4, desc: "Update DEPLOYMENT.md with a step-by-step Contabo runbook", done: false}
+acceptance:
+  - "Report gives a concrete recommendation + cost numbers + the NAS ceiling condition"
+  - "compose.prod + Caddyfile bring the app up with valid HTTPS on a fresh Debian VPS following the runbook"
+  - "A backup can be taken and restored per the documented steps"
+test_plan:
+  - Dry-run the runbook on the Contabo VPS; verify HTTPS + a restore.
+branch: prd-006-deployment
+notes: >
+  User is activating Contabo + may run YunoHost for OTHER services. App must not depend on YunoHost. Promote to
+  'approved' once PRD-003 merges (prod deploy assumes auth/tenancy exist).

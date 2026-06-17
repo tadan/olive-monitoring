@@ -1,0 +1,46 @@
+id: PRD-005
+title: Scientific validation dossier — vegetation indices for OLIVE groves
+status: approved
+priority: P1
+depends_on: []
+model: opus
+human_in_loop: true
+owner: user
+problem: >
+  Olive groves are a sparse canopy over bare/grassy soil, so generic crop NDVI thresholds (tuned for dense field
+  crops) misrepresent olive health. We currently show NDVI/NDMI/ARVI/OSAVI with unvalidated thresholds. Before we
+  market satellite-verified health to customers / ESA-BIC, we must prove the indices and thresholds are appropriate.
+goal: >
+  A cited dossier stating which indices + threshold ranges are scientifically defensible for olive groves at 10m
+  Sentinel-2 resolution, and recalibrated thresholds applied in code.
+human_in_loop_protocol: >
+  This is NOT autonomous. The runner/agents only scaffold and organize. The USER drives the literature research
+  using Elicit AI + papers and feeds findings back. Agents never invent citations or thresholds.
+scope:
+  - Agent: extract our CURRENT indices + thresholds from vegetation_indices.py / alerts.py / baseline.py into a table.
+  - Agent: build an Elicit-ready research brief (questions + a findings template to fill).
+  - User: run Elicit AI / read papers; record validated index choices + threshold ranges + citations into the template.
+  - Agent: once user supplies validated values, propose code changes to thresholds (separate follow-up PRD if large).
+  - Agent: assemble docs/validation/olive-index-dossier.md from the filled template.
+out_of_scope:
+  - Ground-truth field comparison (separate future PRD).
+  - Auto-generating citations (forbidden — user-sourced only).
+deliverables:
+  - docs/validation/current-thresholds.md (agent-extracted, factual)
+  - docs/validation/elicit-research-brief.md (questions + empty findings template)
+  - docs/validation/olive-index-dossier.md (assembled from user findings, cited)
+  - threshold recalibration proposal (diff or follow-up PRD)
+tasks:
+  - {id: T1, desc: "AGENT: extract current indices + threshold values + where they're used into current-thresholds.md", done: false}
+  - {id: T2, desc: "AGENT: draft elicit-research-brief.md (key questions: best indices for sparse olive canopy, soil-adjusted indices, valid NDVI/NDMI ranges, seasonality, 10m resolution limits) + findings template", done: false}
+  - {id: T3, desc: "USER: run Elicit + papers, fill the findings template with cited values", done: false}
+  - {id: T4, desc: "AGENT: assemble cited dossier; propose recalibrated thresholds (no invented numbers)", done: false}
+acceptance:
+  - "current-thresholds.md matches the code exactly (verifiable)"
+  - "Dossier contains only user-supplied, cited findings — no fabricated citations"
+  - "A clear recalibration recommendation exists, traceable to sources"
+test_plan:
+  - Manual review by user; cross-check every cited claim against its source.
+branch: prd-005-validation-dossier
+notes: >
+  Runner may do T1+T2 autonomously, then STOP and wait for the user (T3). Do not proceed to T4 until user fills the template.

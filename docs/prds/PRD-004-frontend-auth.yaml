@@ -1,0 +1,42 @@
+id: PRD-004
+title: Frontend auth & protected app shell
+status: draft
+priority: P1
+depends_on: [PRD-003]
+model: opus
+human_in_loop: false
+owner: autonomous
+problem: >
+  The React app talks to a now-protected API but has no login, no token handling, and no notion of the current org.
+goal: >
+  Users can sign up, verify, log in, and use the existing dashboard scoped to their org; tokens refresh transparently.
+scope:
+  - Login + signup + email-verify pages.
+  - Auth context/provider storing tokens; axios interceptor attaches access token and refreshes on 401.
+  - Protected routes; redirect unauthenticated users to login.
+  - Show current org; if a user has multiple orgs, a simple switcher (else hidden).
+  - Logout.
+out_of_scope:
+  - Visual/UX polish (PRD-008).
+  - Account settings, password reset.
+deliverables:
+  - auth pages + AuthContext + protected route wrapper
+  - axios interceptor with refresh-token flow
+  - org display/switcher wired to existing FarmSelector
+  - component tests (Vitest) for auth flow + interceptor
+tasks:
+  - {id: T1, desc: "AuthContext + token storage + axios interceptor (attach + refresh on 401)", done: false}
+  - {id: T2, desc: "Login, signup, verify-email pages", done: false}
+  - {id: T3, desc: "ProtectedRoute wrapper; redirect + post-login return", done: false}
+  - {id: T4, desc: "Current-org display + switcher; logout", done: false}
+  - {id: T5, desc: "Vitest tests: login success/failure, auto-refresh, protected redirect", done: false}
+acceptance:
+  - "Unauthenticated visit to dashboard redirects to login"
+  - "Successful login lands on the org-scoped dashboard"
+  - "Expired access token auto-refreshes without user-visible failure"
+  - "Frontend tests pass in CI"
+test_plan:
+  - Vitest + mocked API for auth flows and interceptor refresh.
+branch: prd-004-frontend-auth
+notes: >
+  Functional, not pretty — styling deferred to PRD-008. Promote to 'approved' once PRD-003 merges.

@@ -1,0 +1,28 @@
+id: PRD-008
+title: UX/UI & frontend polish
+status: backlog
+priority: P3
+depends_on: [PRD-004]
+model: opus
+human_in_loop: true
+owner: user
+problem: >
+  Once auth, tenancy, validated data, and deployment are in place, the experience needs design work to be
+  customer/chef ready. Explicitly deferred until the foundation lands.
+goal: >
+  A polished, distinctive, accessible interface for the tenant-scoped dashboard and the public transparency view.
+scope:
+  - "Deferred — to be scoped after PRD-001..006. Likely: design system pass, responsive/mobile, onboarding/empty states, the public transparency dashboard, accessibility audit."
+out_of_scope:
+  - Everything until the foundation PRDs are done.
+deliverables:
+  - To be defined when this PRD is activated.
+tasks:
+  - {id: T1, desc: "Scope this PRD into concrete UX tasks once foundation merges (collaborative with user)", done: false}
+acceptance:
+  - "Defined at activation time."
+test_plan:
+  - Defined at activation time.
+branch: prd-008-ux
+notes: >
+  Stays in backlog. Brought into 'draft' only after the foundation phase. UX is the next phase, per user.

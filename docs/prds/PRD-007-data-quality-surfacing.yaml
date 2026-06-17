@@ -1,0 +1,40 @@
+id: PRD-007
+title: Data quality & uncertainty surfacing
+status: draft
+priority: P2
+depends_on: [PRD-003, PRD-005]
+model: opus
+human_in_loop: false
+owner: autonomous
+problem: >
+  The frontend can show a single satellite reading as if it were ground truth. Cloud contamination, low valid-pixel
+  counts, and data gaps make individual readings unreliable, which undermines the "trust the data" goal.
+goal: >
+  Each displayed metric carries honest quality context (cloud %, valid pixel count, confidence, gaps) so users are
+  not misled.
+scope:
+  - API: expose cloud_coverage_percent, valid pixel count per zone/date, and a simple confidence flag.
+  - Frontend: show quality badges + a tooltip; visually de-emphasize low-confidence points on charts.
+  - Mark/flag data gaps on the time series.
+out_of_scope:
+  - Changing the index math (PRD-005 owns thresholds).
+depends_note: >
+  Depends on PRD-005 so confidence semantics match the validated thresholds.
+deliverables:
+  - API fields for quality/confidence
+  - frontend quality badges + low-confidence styling + gap markers
+  - tests
+tasks:
+  - {id: T1, desc: "Add per-reading valid-pixel count + confidence to API responses", done: false}
+  - {id: T2, desc: "Frontend quality badge + tooltip on metrics", done: false}
+  - {id: T3, desc: "De-emphasize low-confidence chart points; mark gaps", done: false}
+  - {id: T4, desc: "Tests for quality fields + rendering", done: false}
+acceptance:
+  - "Every metric in the UI can show its cloud %, pixel count, and confidence"
+  - "Low-confidence readings are visually distinct; gaps are marked"
+  - "Tests pass in CI"
+test_plan:
+  - API tests for quality fields; Vitest for badge + low-confidence rendering.
+branch: prd-007-data-quality
+notes: >
+  Optional but high-trust-value. Promote to 'approved' after PRD-003 and PRD-005.
