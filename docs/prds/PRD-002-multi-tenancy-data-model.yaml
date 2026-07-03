@@ -8,19 +8,23 @@ human_in_loop: false
 owner: autonomous
 problem: >
   Field zones, images, health indices and alerts have no owner. Multiple unrelated farms already share one flat
-  namespace. Tenants must be isolated before the API can be exposed to customers.
+  namespace. Tenants must be isolated before the API can be exposed to customers. Today, adding a farm requires
+  an admin to SSH in and run a KML import script — new users cannot add their own farms or draw zone boundaries.
 goal: >
   Every tenant-owned row belongs to exactly one organization, and a single dependency makes it impossible to query
-  another org's data without an explicit, tested bypass.
+  another org's data without an explicit, tested bypass. The schema must support user-created farms and zones
+  (drawn as GeoJSON polygons in the browser) without any admin intervention.
 scope:
   - organizations table (id, name, created_at) and membership: users gain org_id + role (owner/member).
-  - NEW farms table (id, org_id, name, location) — formalize the ad-hoc multi-farm concept.
-  - Add org_id (+ farm_id where natural) to field_zones; cascade ownership to health_indices/alerts/satellite_images
-    via their zone relationship.
+  - NEW farms table (id, org_id, name, location) — designed for user self-service creation, not just admin seeding.
+  - Add org_id (+ farm_id where natural) to field_zones; field_zones accepts GeoJSON polygons from any source
+    (user-drawn in browser or admin KML import — schema does not distinguish).
+  - Cascade ownership to health_indices/alerts/satellite_images via their zone relationship.
   - Migration that backfills existing zones into a default org + farm (so current data survives).
   - get_current_org dependency derived from the JWT user.
 out_of_scope:
-  - Rewriting endpoints to use the filter (PRD-003).
+  - API endpoints for creating farms/zones — those are in PRD-003 (POST /farms, POST /farms/{id}/zones).
+  - The browser drawing UI — that is in PRD-004.
   - Postgres Row-Level Security — documented as a future hardening PRD, not implemented here.
 deliverables:
   - organizations + farms models + user.org_id/role migration
@@ -28,7 +32,7 @@ deliverables:
   - get_current_org dependency + a reusable tenant-scoped query helper
   - isolation tests
 tasks:
-  - {id: T1, desc: "Add organizations + farms models; add org_id/role to users; add org_id/farm_id to field_zones", done: false}
+  - {id: T1, desc: "Add organizations + farms models; add org_id/role to users; add org_id/farm_id to field_zones; ensure field_zones.boundary accepts any valid GeoJSON polygon (no KML-specific constraints)", done: false}
   - {id: T2, desc: "Write forward migration + backfill existing zones into a 'default' org and farm", done: false}
   - {id: T3, desc: "Implement get_current_org dep and a scoped-query helper (auto-filter by org_id)", done: false}
   - {id: T4, desc: "Tests: user A cannot read user B's zones/health/alerts (expect 404, not 403, to avoid leaking existence)", done: false}
@@ -36,8 +40,12 @@ acceptance:
   - "Existing data is preserved and assigned to a default org after migration"
   - "A query through the scoped helper for org A never returns org B rows"
   - "Cross-tenant access test returns 404 and passes in CI"
+  - "field_zones schema accepts a user-drawn GeoJSON polygon identically to a KML-imported one"
 test_plan:
   - Seed two orgs with zones; assert strict isolation across all tenant-owned tables.
+  - Insert a zone with a hand-crafted GeoJSON polygon (simulating user drawing); assert it is stored and returned correctly.
 branch: prd-002-multitenancy
 notes: >
   Decision locked: shared DB + org_id + app-layer filtering. RLS is a later hardening PRD.
+  Farm/zone creation API endpoints (POST /farms, POST /farms/{id}/zones) belong in PRD-003.
+  The onboarding UI that lets users draw their zone on a map is in PRD-004 (T6).
