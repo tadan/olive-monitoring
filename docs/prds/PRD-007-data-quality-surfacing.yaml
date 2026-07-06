@@ -1,0 +1,64 @@
+id: PRD-007
+title: Data quality & uncertainty surfacing
+status: draft
+priority: P2
+depends_on: [PRD-003, PRD-005]
+model: opus
+human_in_loop: false
+owner: autonomous
+problem: >
+  The frontend can show a single satellite reading as if it were ground truth. Cloud contamination, low valid-pixel
+  counts, and data gaps make individual readings unreliable, which undermines the "trust the data" goal.
+  Additionally, commit 2e115db (2026-05-08) added SCL cloud masking to image_processor.py — it correctly masks
+  SCL classes {3,8,9,10} and skips >50%-cloudy observations — but the computed cloud_fraction is never persisted
+  to the database, so quality metadata is lost immediately after processing. Skipped scenes leave no trace in
+  the DB, so the frontend cannot distinguish "no data" from "skipped: too cloudy."
+goal: >
+  Each displayed metric carries honest quality context (cloud %, valid pixel count, confidence, gaps) so users are
+  not misled. Cloud masking metadata computed during processing is durably stored and surfaced in the UI.
+scope:
+  - DB migration: add cloud_fraction_pct (float), valid_pixel_count (int), cloudy_pixel_count (int) to
+    health_indices; add cloud_skipped (bool, default false) + cloud_fraction_pct to a new skipped-scene record
+    (or a separate cloud_skip_log table) so >50%-cloudy passes are recorded, not silently dropped.
+  - Update image_processor.extract_bands to write cloud_fraction_pct, valid_pixel_count, cloudy_pixel_count
+    after masking; write a skip record when MAX_CLOUD_FRACTION is exceeded.
+  - Run reprocess_with_cloud_mask.py on historical data to backfill cloud columns for existing rows.
+  - Review SCL_MASK_CLASSES completeness: evaluate adding class 2 (dark-area / terrain shadow) and
+    class 11 (snow/ice — relevant for late-autumn Abruzzo imagery). Document the decision with rationale.
+  - API: expose cloud_fraction_pct, valid_pixel_count, confidence flag per zone/date; include cloud_skipped
+    dates in the history response so the frontend can mark them.
+  - Frontend: show quality badges + a tooltip; visually de-emphasize low-confidence points on charts.
+  - Mark/flag data gaps on the time series; distinguish "no data" from "cloud-skipped."
+out_of_scope:
+  - Changing the index math (PRD-005 owns thresholds).
+  - Tuning MAX_CLOUD_FRACTION threshold (document current 0.5 value; leave calibration to PRD-005).
+depends_note: >
+  Depends on PRD-005 so confidence semantics match the validated thresholds. Cloud masking logic already
+  exists in image_processor.py (commit 2e115db); this PRD adds persistence, skip-recording, and surfacing.
+deliverables:
+  - DB migration for cloud quality columns on health_indices
+  - Updated image_processor persisting cloud metrics + writing skip records
+  - Historical reprocessing run with cloud masking backfilled
+  - SCL class review doc/comment in image_processor.py
+  - API fields for quality/confidence + cloud-skipped dates
+  - Frontend quality badges + low-confidence styling + gap/skip markers
+  - Tests
+tasks:
+  - {id: T0, desc: "DB migration: add cloud_fraction_pct, valid_pixel_count, cloudy_pixel_count to health_indices; add cloud_skip_log table (zone_id, satellite_image_id, cloud_fraction_pct, skipped_at); update image_processor to persist these; run reprocess script on historical data", done: false}
+  - {id: T1, desc: "Review SCL_MASK_CLASSES: evaluate class 2 (dark-area shadow) and class 11 (snow/ice); add comment in image_processor.py documenting the decision; expose cloud_fraction_pct + valid_pixel_count + confidence in all health API responses; include cloud_skipped entries in history endpoint", done: false}
+  - {id: T2, desc: "Frontend quality badge + tooltip on metrics (show cloud %, pixel count, confidence)", done: false}
+  - {id: T3, desc: "De-emphasize low-confidence chart points; mark gaps; visually distinguish cloud-skipped dates from missing-data gaps", done: false}
+  - {id: T4, desc: "Tests: API quality fields; Vitest for badge, low-confidence rendering, skip-date markers", done: false}
+acceptance:
+  - "Every metric in the UI can show its cloud %, pixel count, and confidence"
+  - "Low-confidence readings are visually distinct; gaps are marked"
+  - "Cloud-skipped dates appear as distinct markers in the time-series (not silent gaps)"
+  - "Historical health_indices rows have cloud_fraction_pct backfilled after reprocess run"
+  - "Tests pass in CI"
+test_plan:
+  - API tests for quality fields and cloud_skip_log entries; Vitest for badge + low-confidence + skip rendering.
+branch: prd-007-data-quality
+notes: >
+  Optional but high-trust-value. Promote to 'approved' after PRD-003 and PRD-005.
+  Cloud masking foundation already in image_processor.py (commit 2e115db, 2026-05-08); this PRD closes
+  the persistence and surfacing gap rather than rebuilding from scratch.

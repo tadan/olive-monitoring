@@ -1,0 +1,43 @@
+id: PRD-000
+title: Engineering hygiene & CI foundation
+status: approved
+priority: P0
+depends_on: []
+model: opus
+human_in_loop: false
+owner: autonomous
+problem: >
+  The repo has no backend linter, no pyproject.toml, no conftest.py, no CI workflow, and zero frontend tests.
+  Autonomous PR-gated work is only safe if a green build is an enforceable gate. This PRD builds that gate first.
+goal: >
+  Every push runs lint + tests for both stacks in GitHub Actions; a green run is the precondition for any PR merge.
+scope:
+  - Backend: add ruff (lint + format) and pyproject.toml; wire pytest config + conftest.py with a test DB fixture.
+  - Frontend: add Vitest + React Testing Library; one smoke test rendering the Dashboard.
+  - GitHub Actions CI: lint + test both stacks on push and PR.
+  - pre-commit config (ruff, eslint) for local fast feedback.
+out_of_scope:
+  - New features, auth, or schema changes (later PRDs).
+  - 100% coverage — aim for a working harness, not exhaustive tests.
+deliverables:
+  - backend/pyproject.toml (ruff + pytest config)
+  - backend/tests/conftest.py (sqlite or ephemeral pg fixture)
+  - frontend vitest.config + at least one passing component test
+  - .github/workflows/ci.yml
+  - .pre-commit-config.yaml
+tasks:
+  - {id: T1, desc: "Add pyproject.toml with ruff lint+format rules; fix existing lint errors", done: false}
+  - {id: T2, desc: "Add conftest.py with isolated test-DB fixture; make existing 4 pytest files pass against it", done: false}
+  - {id: T3, desc: "Add Vitest + RTL to frontend; smoke-test Dashboard renders without crash", done: false}
+  - {id: T4, desc: "Add .github/workflows/ci.yml: jobs backend-lint, backend-test, frontend-lint, frontend-test", done: false}
+  - {id: T5, desc: "Add .pre-commit-config.yaml (ruff, eslint)", done: false}
+acceptance:
+  - "ruff check backend passes with zero errors"
+  - "pytest backend/tests passes"
+  - "npm --prefix frontend run lint passes and npm test passes"
+  - "CI workflow is green on the PR branch"
+test_plan:
+  - Run the CI workflow on the branch; all four jobs green.
+branch: prd-000-hygiene-ci
+notes: >
+  This is the gate for every other PRD. Keep ruff rules pragmatic (E,F,I + a few) to avoid a huge initial fix.

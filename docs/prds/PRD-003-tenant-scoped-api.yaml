@@ -1,0 +1,39 @@
+id: PRD-003
+title: Tenant-scoped API refactor
+status: draft
+priority: P1
+depends_on: [PRD-001, PRD-002]
+model: opus
+human_in_loop: false
+owner: autonomous
+problem: >
+  Existing endpoints (/api/zones, /zones/{id}/health, /alerts, /dashboard/summary, /history) return all data with no
+  ownership check. They must be scoped to the caller's organization.
+goal: >
+  Every data endpoint requires auth and returns only the caller org's data; org-creation and membership flows exist.
+scope:
+  - Protect all /api/* data endpoints with get_current_user + get_current_org.
+  - Rewrite each query through the scoped helper from PRD-002.
+  - POST /orgs (create org on signup), GET /orgs/me, basic invite/add-member endpoint.
+  - 404 (not 403) for resources outside the caller's org.
+out_of_scope:
+  - Frontend changes (PRD-004).
+  - Billing / plans.
+deliverables:
+  - all /api/* endpoints tenant-scoped + auth-required
+  - org management endpoints
+  - updated endpoint tests asserting scoping
+tasks:
+  - {id: T1, desc: "Add auth + org deps to every /api/* route; remove any unscoped queries", done: false}
+  - {id: T2, desc: "Refactor zones/health/alerts/summary/history queries through scoped helper", done: false}
+  - {id: T3, desc: "Add org create/read + add-member endpoints; new signup creates an org", done: false}
+  - {id: T4, desc: "Update API tests: unauth=401, cross-tenant=404, own data=200", done: false}
+acceptance:
+  - "No /api/* data endpoint responds 200 without a valid token"
+  - "dashboard/summary aggregates only the caller org's zones"
+  - "All endpoint tests pass in CI"
+test_plan:
+  - Parametrized tests across every endpoint for unauth / cross-tenant / owner cases.
+branch: prd-003-scoped-api
+notes: >
+  Promote to 'approved' once PRD-002 merges.

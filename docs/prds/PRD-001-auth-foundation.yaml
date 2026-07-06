@@ -1,0 +1,46 @@
+id: PRD-001
+title: Auth foundation (FastAPI JWT)
+status: approved
+priority: P0
+depends_on: [PRD-000]
+model: opus
+human_in_loop: false
+owner: autonomous
+problem: >
+  The API is fully public with no concept of a user. A multi-tenant SaaS needs authenticated users before any
+  tenant scoping can exist.
+goal: >
+  Users can register, verify email, log in, and call the API with a short-lived JWT (refreshable), with passwords
+  stored using argon2id.
+scope:
+  - users table (id, email unique, password_hash, is_verified, created_at) + Alembic-or-SQL migration.
+  - Password hashing with argon2id (argon2-cffi / passlib).
+  - JWT access token (short, ~15min) + refresh token (rotating); signing key from env (config.py).
+  - Email verification token via existing SMTP settings in config.py.
+  - Endpoints: POST /auth/register, POST /auth/verify, POST /auth/login, POST /auth/refresh, GET /auth/me.
+  - get_current_user FastAPI dependency.
+out_of_scope:
+  - Organizations / multi-tenancy (PRD-002).
+  - Frontend login UI (PRD-004).
+  - Password reset, OAuth (later).
+deliverables:
+  - backend/app/auth.py (hashing, JWT encode/decode, deps)
+  - users model + migration script in backend/scripts/
+  - auth endpoints wired into main.py
+  - tests covering register/verify/login/refresh/me + bad-credential paths
+tasks:
+  - {id: T1, desc: "Add users model + migration; add JWT_SECRET + token TTLs to config.py", done: false}
+  - {id: T2, desc: "Implement auth.py: argon2id hashing, access/refresh JWT, get_current_user dep", done: false}
+  - {id: T3, desc: "Implement register + email verification (reuse SMTP config)", done: false}
+  - {id: T4, desc: "Implement login + refresh (rotating refresh tokens)", done: false}
+  - {id: T5, desc: "Add GET /auth/me; tests for all happy + failure paths", done: false}
+acceptance:
+  - "Register → verify → login returns a valid access+refresh token pair"
+  - "GET /auth/me with a valid token returns the user; without/expired token returns 401"
+  - "Passwords are never stored or returned in plaintext; hash is argon2id"
+  - "All auth tests pass in CI"
+test_plan:
+  - pytest auth tests; assert 401s on missing/expired/tampered tokens.
+branch: prd-001-auth
+notes: >
+  Reuse smtp_* fields already in config.py. Do NOT log tokens or passwords.

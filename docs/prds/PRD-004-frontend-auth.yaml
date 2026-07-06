@@ -1,0 +1,54 @@
+id: PRD-004
+title: Frontend auth & protected app shell
+status: draft
+priority: P1
+depends_on: [PRD-003]
+model: opus
+human_in_loop: false
+owner: autonomous
+problem: >
+  The React app talks to a now-protected API but has no login, no token handling, and no notion of the current org.
+  After signing up, a new user has no farms or zones — there is no way to add them without admin SSH access.
+goal: >
+  Users can sign up, verify, log in, draw their farm on a map, and use the existing dashboard scoped to their org;
+  tokens refresh transparently. The admin KML-import script is no longer the only way to add a zone.
+scope:
+  - Login + signup + email-verify pages.
+  - Auth context/provider storing tokens; axios interceptor attaches access token and refreshes on 401.
+  - Protected routes; redirect unauthenticated users to login.
+  - Post-signup onboarding wizard: (1) name the farm, (2) draw the zone boundary on a Leaflet map using
+    Leaflet.PM or leaflet-draw, (3) confirm and submit to POST /farms + POST /farms/{id}/zones (PRD-003).
+    User lands on their org-scoped dashboard only after completing this step.
+  - Show current org; if a user has multiple orgs, a simple switcher (else hidden).
+  - Logout.
+out_of_scope:
+  - Visual/UX polish (PRD-008).
+  - Account settings, password reset.
+  - Multiple zones per farm during onboarding — user can add more zones later; wizard creates exactly one.
+deliverables:
+  - auth pages + AuthContext + protected route wrapper
+  - axios interceptor with refresh-token flow
+  - post-signup onboarding wizard (farm name + Leaflet draw + submit)
+  - org display/switcher wired to existing FarmSelector
+  - component tests (Vitest) for auth flow + interceptor + onboarding submission
+tasks:
+  - {id: T1, desc: "AuthContext + token storage + axios interceptor (attach + refresh on 401)", done: false}
+  - {id: T2, desc: "Login, signup, verify-email pages", done: false}
+  - {id: T3, desc: "ProtectedRoute wrapper; redirect + post-login return", done: false}
+  - {id: T4, desc: "Current-org display + switcher; logout", done: false}
+  - {id: T5, desc: "Vitest tests: login success/failure, auto-refresh, protected redirect", done: false}
+  - {id: T6, desc: "Post-signup onboarding wizard: step 1 enter farm name + approximate location; step 2 draw zone boundary on Leaflet map (Leaflet.PM preferred — already a Leaflet ecosystem dep); step 3 submit to POST /farms then POST /farms/{id}/zones with drawn GeoJSON polygon; redirect to dashboard on success", done: false}
+acceptance:
+  - "Unauthenticated visit to dashboard redirects to login"
+  - "New user after email verification is taken to onboarding wizard, not dashboard"
+  - "User can draw a polygon on the map and submit it; a zone appears in the dashboard"
+  - "Existing user (already has zones) skips the wizard on login"
+  - "Expired access token auto-refreshes without user-visible failure"
+  - "Frontend tests pass in CI"
+test_plan:
+  - Vitest + mocked API for auth flows and interceptor refresh.
+  - Vitest for onboarding wizard: mock POST /farms + POST /zones, assert GeoJSON payload shape is correct.
+branch: prd-004-frontend-auth
+notes: >
+  Functional, not pretty — styling deferred to PRD-008. Promote to 'approved' once PRD-003 merges.
+  T6 depends on PRD-003 having POST /farms and POST /farms/{id}/zones endpoints available.
