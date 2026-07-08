@@ -20,12 +20,12 @@ lifecycle and `RUNNER.md` for how the build loop works._
 Legend: ✅ approved · 🔨 in_progress · 👀 in_review (PR open) · 🏁 done · 📝 draft · 🗄️ backlog · 🧑 human-in-loop
 
 ## Eligible for the runner right now
-- **PRD-001** (after PRD-000 merges).
-- **PRD-005 T1+T2 only** (scaffolding), then STOP for user research.
+- **PRD-001** — auth foundation, P0, no blockers.
+- **PRD-005 T1+T2 only** (agent-tagged scaffolding tasks), then STOP for user research.
 
 ## Build order (critical path)
 `000 → 001 → 002 → 003 → 004` (foundation), with `005` (science, supervised) and `006` (deploy) in parallel once
 their deps clear. `007` and `008` last.
 
 ## Review queue (PRs awaiting your merge)
-- **PRD-000** — `prd-000-hygiene-ci` → [DAN-5](https://linear.app/daniele-tatasciore/issue/DAN-5) — awaiting CI green + merge
+_Nothing pending._

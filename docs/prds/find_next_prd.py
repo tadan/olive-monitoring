@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 """Find the next PRD eligible for the autonomous runner.
 
-Prints the result and writes prd_id / prd_branch / prd_title to GITHUB_OUTPUT
-if running inside GitHub Actions.  Exit 0 in all cases; a blank prd_id means
-"nothing to do".
+Exits 0 in all cases. Writes a blank prd_id to GITHUB_OUTPUT when nothing
+should run (gh error, or no eligible PRD). The caller is responsible for
+the daily budget check; this script only answers "which PRD is next?"
 
-A PRD is considered effectively done if:
+A PRD is considered done when:
   - status == 'done', OR
-  - status == 'in_review' AND its branch has no currently open PR
-    (i.e. it was squash-merged and the branch was deleted).
+  - status == 'in_review' AND its branch was actually MERGED (not just
+    closed/deleted without merging — Opus review finding).
+
+Fail-closed: any gh CLI failure raises and we write a blank prd_id so the
+runner never proceeds on incomplete information.
 """
 
 import json
@@ -20,20 +23,29 @@ from pathlib import Path
 import yaml
 
 PRDS_DIR = Path(__file__).parent
+GH_LIMIT = 200  # raise if you ever have >200 open or merged PRs
 
 
-def open_pr_branches() -> set[str]:
-    result = subprocess.run(
-        ["gh", "pr", "list", "--json", "headRefName", "--state", "open"],
-        capture_output=True,
-        text=True,
-    )
+def _gh(*args: str) -> list[dict]:
+    """Run gh CLI, return parsed JSON list. Raises RuntimeError on failure."""
+    result = subprocess.run(["gh", *args], capture_output=True, text=True)
     if result.returncode != 0:
-        return set()
-    return {pr["headRefName"] for pr in json.loads(result.stdout or "[]")}
+        raise RuntimeError(f"gh {' '.join(args)} failed:\n{result.stderr.strip()}")
+    return json.loads(result.stdout or "[]")
 
 
-def load_prds() -> dict:
+def merged_pr_branches() -> set[str]:
+    """Branch names of PRs that were actually squash/merge-committed into main."""
+    prs = _gh(
+        "pr", "list",
+        "--state", "merged",
+        "--json", "headRefName",
+        "--limit", str(GH_LIMIT),
+    )
+    return {pr["headRefName"] for pr in prs}
+
+
+def load_prds() -> dict[str, dict]:
     prds = {}
     for f in sorted(PRDS_DIR.glob("PRD-*.yaml")):
         with open(f) as fp:
@@ -42,12 +54,12 @@ def load_prds() -> dict:
     return prds
 
 
-def is_done(prd: dict, open_branches: set[str]) -> bool:
+def is_done(prd: dict, merged: set[str]) -> bool:
     status = prd.get("status", "")
     if status == "done":
         return True
-    # Merged but YAML not yet updated: branch gone, was in_review
-    if status == "in_review" and prd.get("branch") not in open_branches:
+    # in_review + branch was actually merged (closed-without-merge is NOT done)
+    if status == "in_review" and prd.get("branch") in merged:
         return True
     return False
 
@@ -60,24 +72,31 @@ def _write_output(key: str, value: str) -> None:
             f.write(f"{key}={value}\n")
 
 
-def main() -> None:
-    open_branches = open_pr_branches()
-    prds = load_prds()
+def _bail(reason: str) -> None:
+    print(reason)
+    for key in ("prd_id", "prd_branch", "prd_human_in_loop"):
+        _write_output(key, "" if key != "prd_human_in_loop" else "false")
 
-    done_ids = {id for id, p in prds.items() if is_done(p, open_branches)}
+
+def main() -> None:
+    try:
+        merged = merged_pr_branches()
+    except RuntimeError as e:
+        _bail(f"ERROR: {e}\nExiting safely — cannot determine merge state.")
+        return
+
+    prds = load_prds()
+    done_ids = {id for id, p in prds.items() if is_done(p, merged)}
     print(f"Done PRDs: {sorted(done_ids) or 'none'}")
 
-    eligible = []
-    for id, prd in prds.items():
-        if prd.get("status") != "approved":
-            continue
-        deps = prd.get("depends_on") or []
-        if all(dep in done_ids for dep in deps):
-            eligible.append(prd)
+    eligible = [
+        prd for id, prd in prds.items()
+        if prd.get("status") == "approved"
+        and all(dep in done_ids for dep in (prd.get("depends_on") or []))
+    ]
 
     if not eligible:
-        print("No eligible PRD — nothing to do.")
-        _write_output("prd_id", "")
+        _bail("No eligible PRD — nothing to do.")
         return
 
     eligible.sort(key=lambda p: p.get("priority", "P9"))
@@ -86,7 +105,7 @@ def main() -> None:
 
     _write_output("prd_id", next_prd["id"])
     _write_output("prd_branch", next_prd.get("branch", ""))
-    _write_output("prd_title", next_prd["title"])
+    _write_output("prd_human_in_loop", str(next_prd.get("human_in_loop", False)).lower())
 
 
 if __name__ == "__main__":
