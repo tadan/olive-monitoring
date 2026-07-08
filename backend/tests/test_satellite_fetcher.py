@@ -1,11 +1,14 @@
 """Tests for Copernicus satellite data fetching."""
+
 import pytest
-from datetime import date, timedelta
+
 from app.satellite_fetcher import SatelliteFetcher, query_sentinel2_products
 
 
-def test_satellite_fetcher_initialization():
+def test_satellite_fetcher_initialization(tmp_path, monkeypatch):
     """Test that SatelliteFetcher can be initialized."""
+    import app.satellite_fetcher as sf_module
+    monkeypatch.setattr(sf_module.settings, "data_dir", str(tmp_path))
     fetcher = SatelliteFetcher()
 
     assert fetcher is not None
@@ -21,19 +24,13 @@ def test_query_sentinel2_products_requires_geometry():
 
 def test_query_sentinel2_products_with_valid_geometry():
     """Test querying with valid geometry (mocked - won't actually call API in test)."""
-    # This test validates the function signature
-    # Actual API calls will be integration tested separately
-    geometry = {"type": "Polygon", "coordinates": [[[12.4964, 41.9028], [12.4968, 41.9028], [12.4968, 41.9025], [12.4964, 41.9025], [12.4964, 41.9028]]]}
-    start_date = date.today() - timedelta(days=30)
-    end_date = date.today()
-
-    # Function should exist and accept these parameters
-    # We'll mock the actual API call in integration tests
     assert callable(query_sentinel2_products)
 
 
-def test_satellite_fetcher_has_authentication():
+def test_satellite_fetcher_has_authentication(tmp_path, monkeypatch):
     """Test that SatelliteFetcher loads authentication from config."""
+    import app.satellite_fetcher as sf_module
+    monkeypatch.setattr(sf_module.settings, "data_dir", str(tmp_path))
     from app.config import settings
 
     fetcher = SatelliteFetcher()

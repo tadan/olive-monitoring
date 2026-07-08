@@ -1,13 +1,12 @@
 """Copernicus Sentinel-2 satellite data fetching using the new Data Space API."""
-from typing import Dict, List, Optional
+import logging
 from datetime import date, datetime, timedelta
 from pathlib import Path
-import logging
-import requests
-from requests.auth import HTTPBasicAuth
-import json
+from typing import Dict, List, Optional
 
+import requests
 from shapely.geometry import shape
+
 from app.config import settings
 
 logger = logging.getLogger(__name__)

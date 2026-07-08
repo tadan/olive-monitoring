@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document id="document">
+	<name>Ruzzi</name>
+	<gx:CascadingStyle kml:id="__managed_style_290DCF74383E40027344">
+		<Style>
+			<IconStyle>
+				<scale>1.2</scale>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>3</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+				<displayMode>hide</displayMode>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<gx:CascadingStyle kml:id="__managed_style_1917249E303E40027344">
+		<Style>
+			<IconStyle>
+				<Icon>
+					<href>https://earth.google.com/earth/document/icon?color=1976d2&amp;id=2000&amp;scale=4</href>
+				</Icon>
+				<hotSpot x="64" y="128" xunits="pixels" yunits="insetPixels"/>
+			</IconStyle>
+			<LabelStyle>
+			</LabelStyle>
+			<LineStyle>
+				<color>ff2dc0fb</color>
+				<width>2</width>
+			</LineStyle>
+			<PolyStyle>
+				<color>40ffffff</color>
+			</PolyStyle>
+			<BalloonStyle>
+				<displayMode>hide</displayMode>
+			</BalloonStyle>
+		</Style>
+	</gx:CascadingStyle>
+	<StyleMap id="__managed_style_058F3C54BA3E40027344">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#__managed_style_1917249E303E40027344</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#__managed_style_290DCF74383E40027344</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Folder id="09D2CBCE333E40077A06">
+		<name>Ruzzi Aunt</name>
+		<styleUrl>#__managed_style_058F3C54BA3E40027344</styleUrl>
+		<Placemark id="0EEE48BEBA3E4008B990">
+			<name>Ruzzi Aunt - Home Road</name>
+			<LookAt>
+				<longitude>14.19097224977874</longitude>
+				<latitude>42.31303269086189</latitude>
+				<altitude>227.2137106462588</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<gx:fovy>35</gx:fovy>
+				<range>254.1490057732881</range>
+				<altitudeMode>absolute</altitudeMode>
+			</LookAt>
+			<styleUrl>#__managed_style_058F3C54BA3E40027344</styleUrl>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							14.19029928698849,42.31307007519418,0 14.19094046115027,42.31251255142066,0 14.19105868903399,42.3125873245666,0 14.19081598672405,42.31277398371943,0 14.19087107839929,42.31281685476701,0 14.19084525153202,42.31290923388704,0 14.19070173824005,42.31288796802274,0 14.19065089245723,42.31306482920714,0 14.19065807893608,42.3131155407592,0 14.19085522902371,42.31316879845681,0 14.19093748205117,42.31342671045543,0 14.1908348360607,42.31342248120057,0 14.19029928698849,42.31307007519418,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark id="06C690CE0C3E4009D92B">
+			<name>Ruzzi Aunt - Home Olives</name>
+			<LookAt>
+				<longitude>14.19099146806702</longitude>
+				<latitude>42.31300796603465</latitude>
+				<altitude>223.2911320613264</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<gx:fovy>35</gx:fovy>
+				<range>257.404902220951</range>
+				<altitudeMode>absolute</altitudeMode>
+			</LookAt>
+			<styleUrl>#__managed_style_058F3C54BA3E40027344</styleUrl>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							14.19129063175852,42.31330650705145,0 14.19104800862949,42.31339728905797,0 14.1909241619084,42.31309889479863,0 14.19096878998679,42.31293651075489,0 14.19089996107138,42.31291308671928,0 14.19094133188306,42.31283732377291,0 14.19102441558234,42.3127548226114,0 14.19103440257219,42.31271529110982,0 14.19113464456254,42.31263245620853,0 14.19183570869857,42.31305329011725,0 14.19129063175852,42.31330650705145,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark id="0C20C8BA9D3E400BCEBB">
+			<name>Ruzzi Aunt - Road Up</name>
+			<LookAt>
+				<longitude>14.19266934954244</longitude>
+				<latitude>42.31610554523621</latitude>
+				<altitude>234.9788659267184</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<gx:fovy>35</gx:fovy>
+				<range>263.2637589647129</range>
+				<altitudeMode>absolute</altitudeMode>
+			</LookAt>
+			<styleUrl>#__managed_style_058F3C54BA3E40027344</styleUrl>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							14.19183799484034,42.31594320700552,0 14.19211794701239,42.31586137108535,0 14.1924518167993,42.31577769011506,0 14.19286138702234,42.31569555508037,0 14.1930237201694,42.31567958773354,0 14.19306871787449,42.31610663337938,0 14.1922401869717,42.3164475850289,0 14.19206574527663,42.31624146791303,0 14.19195149614638,42.31611681011427,0 14.19183799484034,42.31594320700552,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark id="0CFFCC0F4E3E400CAED0">
+			<name>Ruzzi Aunt - Road Down</name>
+			<LookAt>
+				<longitude>14.19354216866218</longitude>
+				<latitude>42.31572516328086</latitude>
+				<altitude>219.0897021120407</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<gx:fovy>35</gx:fovy>
+				<range>279.1529072522099</range>
+				<altitudeMode>absolute</altitudeMode>
+			</LookAt>
+			<styleUrl>#__managed_style_058F3C54BA3E40027344</styleUrl>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							14.19319659740651,42.31601615524675,0 14.19315497349345,42.31560055524396,0 14.19374548429469,42.31542188413837,0 14.19459117328237,42.31504621705436,0 14.1950883414272,42.31543628407604,0 14.19441124490135,42.31570406915071,0 14.19428636351396,42.31576842304997,0 14.19406087372139,42.31583408322883,0 14.19319659740651,42.31601615524675,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+	</Folder>
+	<Folder id="0F90E22B583E4006C3B0">
+		<name>Ruzzi</name>
+		<styleUrl>#__managed_style_058F3C54BA3E40027344</styleUrl>
+		<Placemark id="040AA5186C3E40027321">
+			<name>Ruzzi Home</name>
+			<LookAt>
+				<longitude>14.19096193326991</longitude>
+				<latitude>42.31269159330277</latitude>
+				<altitude>225.6195980436507</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<gx:fovy>35</gx:fovy>
+				<range>195.5607164668618</range>
+				<altitudeMode>absolute</altitudeMode>
+			</LookAt>
+			<styleUrl>#__managed_style_058F3C54BA3E40027344</styleUrl>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							14.18968576170345,42.31269149690186,0 14.18991655425075,42.31256917757174,0 14.1901437274472,42.31272646268008,0 14.19039158470194,42.3125152900004,0 14.19017703336878,42.31242226836894,0 14.19029049716588,42.31224495545671,0 14.19047377162413,42.31230145891949,0 14.19054790596541,42.31212069836195,0 14.19063007084208,42.31190005834418,0 14.19194356843291,42.31213412091813,0 14.19255976527586,42.31191793813401,0 14.19360071891876,42.31245646687199,0 14.19314159164746,42.31264769715248,0 14.19285800620841,42.31283601345613,0 14.19252099339941,42.31292380247477,0 14.19208550022541,42.31298875304631,0 14.19184150232746,42.31304549416281,0 14.19094288284642,42.31249324183138,0 14.19027342764256,42.31306794467901,0 14.18968576170345,42.31269149690186,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark id="0332344A833E4004587C">
+			<name>Ruzzi - Road Up</name>
+			<LookAt>
+				<longitude>14.19227908934215</longitude>
+				<latitude>42.31553943042634</latitude>
+				<altitude>233.1180930771149</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<gx:fovy>35</gx:fovy>
+				<range>201.6628452935038</range>
+				<altitudeMode>absolute</altitudeMode>
+			</LookAt>
+			<styleUrl>#__managed_style_058F3C54BA3E40027344</styleUrl>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							14.19182317893566,42.31593354560592,0 14.1917353116907,42.31558343792398,0 14.19164853939335,42.31540297889834,0 14.19152186362855,42.31527246517888,0 14.19189180245528,42.31515340320173,0 14.19294300711113,42.31501636345175,0 14.19302553564969,42.31566208968513,0 14.19274577292746,42.31569822510088,0 14.19235784509678,42.31578256605395,0 14.19182317893566,42.31593354560592,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+		<Placemark id="09335FB8AB3E4006311F">
+			<name>Ruzzi - Road Down</name>
+			<LookAt>
+				<longitude>14.1916010144089</longitude>
+				<latitude>42.31604164083294</latitude>
+				<altitude>245.4330501406319</altitude>
+				<heading>0</heading>
+				<tilt>0</tilt>
+				<gx:fovy>35</gx:fovy>
+				<range>579.8816099724355</range>
+				<altitudeMode>absolute</altitudeMode>
+			</LookAt>
+			<styleUrl>#__managed_style_058F3C54BA3E40027344</styleUrl>
+			<Polygon>
+				<outerBoundaryIs>
+					<LinearRing>
+						<coordinates>
+							14.19310961322094,42.31497390854983,0 14.19397414112564,42.31458663139235,0 14.19464599010675,42.31500923870171,0 14.19366458717335,42.31542748563813,0 14.19312737229573,42.31557991818085,0 14.19310961322094,42.31497390854983,0 
+						</coordinates>
+					</LinearRing>
+				</outerBoundaryIs>
+			</Polygon>
+		</Placemark>
+	</Folder>
+</Document>
+</kml>

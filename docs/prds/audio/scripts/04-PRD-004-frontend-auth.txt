@@ -1,0 +1,25 @@
+Episode four. The face of the door.
+
+[[slnc 500]]
+
+By now the back end is locked down tight. Which creates a funny problem: the website on the front can't get in either. It's talking to a server that now demands a token it doesn't have. So this episode gives the front end a face for the front door.
+
+[[slnc 400]]
+
+A login page. A sign-up page. A page to confirm your email. Nothing fancy yet, we're explicitly saving the beauty for later, just the working machinery.
+
+[[slnc 400]]
+
+Behind the screens, the app learns to hold your token and attach it to every request automatically. And here's the elegant bit: when that fifteen-minute token quietly expires mid-session, the app catches the rejection, uses the refresh pass to get a new token, and retries, all without you noticing. You're never kicked out in the middle of looking at your trees.
+
+[[slnc 400]]
+
+We also add protected routes. If you're not logged in and you try to open the dashboard, you get gently redirected to the login screen, and after you sign in, sent right back where you were headed.
+
+[[slnc 400]]
+
+And since one person might eventually belong to more than one farm organization, we wire in a simple switcher, hooked into the farm selector that already exists in the app.
+
+[[slnc 400]]
+
+When this episode is done, the loop is closed. A real person, who has never seen this system before, can arrive, sign up, verify, log in, and see only their own fields. That is the moment it stops being your tool and starts being a product. Functional, not yet pretty. The pretty comes later, on purpose.

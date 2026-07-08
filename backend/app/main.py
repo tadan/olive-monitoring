@@ -1,14 +1,13 @@
 """FastAPI application for Olive Farm Monitoring."""
+from datetime import datetime
+from typing import Optional
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from typing import List, Optional
-from datetime import date, datetime
+from sqlalchemy import desc, extract, text
 
-from app.config import settings
 from app.database import get_db
-from app.models import FieldZone, HealthIndex, Alert
-from sqlalchemy.orm import Session
-from sqlalchemy import desc, text, extract
+from app.models import Alert, FieldZone, HealthIndex
 
 app = FastAPI(
     title="Olive Farm Satellite Monitoring API",

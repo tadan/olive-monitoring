@@ -1,11 +1,12 @@
 """Baseline statistics calculation for seasonal patterns and anomaly detection."""
 import logging
-from typing import Optional, List, Tuple
 from datetime import date, datetime
-from sqlalchemy.orm import Session
-from sqlalchemy import func
+from typing import Optional, Tuple
 
-from app.models import BaselineStatistic, HealthIndex, FieldZone
+from sqlalchemy import func
+from sqlalchemy.orm import Session
+
+from app.models import BaselineStatistic, FieldZone, HealthIndex
 
 logger = logging.getLogger(__name__)
 
@@ -239,7 +240,7 @@ class BaselineManager:
             .filter(
                 BaselineStatistic.zone_id == zone_id,
                 BaselineStatistic.metric == metric,
-                BaselineStatistic.season == None
+                BaselineStatistic.season.is_(None)
             )
             .first()
         )

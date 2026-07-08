@@ -7,7 +7,7 @@ lifecycle and `RUNNER.md` for how the build loop works._
 
 | PRD | Title | Status | Pri | Depends on | Owner |
 |-----|-------|--------|-----|------------|-------|
-| 000 | Engineering hygiene & CI foundation | ✅ approved | P0 | — | autonomous |
+| 000 | Engineering hygiene & CI foundation | 👀 in_review | P0 | — | autonomous |
 | 001 | Auth foundation (FastAPI JWT) | ✅ approved | P0 | 000 | autonomous |
 | 002 | Multi-tenancy data model | ✅ approved | P0 | 001 | autonomous |
 | 003 | Tenant-scoped API refactor | 📝 draft | P1 | 001, 002 | autonomous |

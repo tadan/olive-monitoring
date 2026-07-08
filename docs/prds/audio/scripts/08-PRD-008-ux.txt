@@ -1,0 +1,25 @@
+Episode eight. The part we're saving for last.
+
+[[slnc 500]]
+
+This is the shortest episode, on purpose, because its whole message is, not yet.
+
+[[slnc 400]]
+
+There's a strong temptation, when building something, to make it beautiful early. To polish the buttons, perfect the colors, agonize over the layout. And it's a trap, because you end up with a gorgeous front on a hollow building. Beautiful, and not actually a product.
+
+[[slnc 400]]
+
+So we made a deliberate choice. The design, the real user experience work, the polish that makes a chef or a customer go, oh, this is lovely, all of it waits until the foundation is real. Until people can log in. Until their data is theirs alone. Until the numbers are scientifically honest. Until it runs somewhere dependable.
+
+[[slnc 400]]
+
+That's why this episode sits in the backlog, not the build queue. It's a placeholder, a promise. When the foundation lands, this is where we'll scope the good stuff: a proper design system, a layout that works on a phone at a farmers market, the welcoming first-time experience, the public transparency view that tells the farm's story, a real accessibility pass.
+
+[[slnc 400]]
+
+And that work, like the science, will be done with you, not by an agent alone. Taste is human.
+
+[[slnc 400]]
+
+So consider this episode a bookmark. The reward at the end of the discipline. We build the bones first. Then, and only then, we make it sing. That's the whole plan. Eight episodes, one through the back, one chapter at a time, prototype to product. Enjoy the walk.

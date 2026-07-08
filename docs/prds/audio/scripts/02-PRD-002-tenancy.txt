@@ -1,0 +1,25 @@
+Episode two. Walls between strangers.
+
+[[slnc 500]]
+
+Now the system knows who's logging in. But all the data still lives in one big open room. Your Abruzzo olives, the Ridgedale fields, the Malmö garden, all the zones sit together with no notion of who owns what. For a single owner, fine. For a product with paying customers, it's unacceptable. Customer A must never, ever see customer B's fields.
+
+[[slnc 400]]
+
+This episode builds the walls. We introduce a new idea: the organization. The tenant. Above every user sits an organization, and every farm, every zone, every reading and alert now belongs to one. Think of it as a stamp on every single piece of data, saying, this belongs to them.
+
+[[slnc 400]]
+
+Then comes the rule that enforces it. A single gatekeeper in the code that, on every request, looks at who you are, finds your organization, and filters everything to just your stamp. One gatekeeper, used everywhere, so there's no forgotten corner where data leaks.
+
+[[slnc 400]]
+
+There's a careful migration too. Your existing data doesn't vanish. It gets gathered up and assigned to a default organization, so nothing breaks and history is preserved.
+
+[[slnc 400]]
+
+And here's the part I care about most: we prove it. We write a test where customer A reaches for customer B's data, and we demand the answer be, not found. Not even denied, which would hint the data exists, just, nothing here. If that test ever goes red, the walls have a crack, and the build stops.
+
+[[slnc 400]]
+
+Boring from the outside. But this is the difference between a demo and a business you can trust with someone else's farm.
