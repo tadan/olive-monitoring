@@ -41,7 +41,11 @@ const Dashboard = () => {
 
     // Reset selected zone when farm changes
     useEffect(() => {
-        const farmZones = getFilteredZones()
+        const farmZones = zones.filter((zone) => {
+            if (selectedFarm === 'ruzzi') return zone.name.startsWith('Ruzzi - ') || zone.name === 'Ruzzi Home'
+            if (selectedFarm === 'ruzzi-aunt') return zone.name.includes('Ruzzi Aunt')
+            return !zone.name.includes('Ruzzi')
+        })
         if (farmZones.length > 0) {
             setSelectedZone(farmZones[0].id)
         } else {

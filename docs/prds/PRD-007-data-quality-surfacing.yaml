@@ -57,6 +57,8 @@ acceptance:
   - "Tests pass in CI"
 test_plan:
   - API tests for quality fields and cloud_skip_log entries; Vitest for badge + low-confidence + skip rendering.
+linear_id: DAN-12
+linear_url: https://linear.app/daniele-tatasciore/issue/DAN-12/prd-007-data-quality-and-uncertainty-surfacing
 branch: prd-007-data-quality
 notes: >
   Optional but high-trust-value. Promote to 'approved' after PRD-003 and PRD-005.

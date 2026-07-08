@@ -8,13 +8,13 @@ lifecycle and `RUNNER.md` for how the build loop works._
 | PRD | Title | Status | Pri | Depends on | Owner | Linear |
 |-----|-------|--------|-----|------------|-------|--------|
 | 000 | Engineering hygiene & CI foundation | 👀 in_review | P0 | — | autonomous | [DAN-5](https://linear.app/daniele-tatasciore/issue/DAN-5) |
-| 001 | Auth foundation (FastAPI JWT) | ✅ approved | P0 | 000 | autonomous | — |
-| 002 | Multi-tenancy data model | ✅ approved | P0 | 001 | autonomous | — |
-| 003 | Tenant-scoped API refactor | 📝 draft | P1 | 001, 002 | autonomous | — |
-| 004 | Frontend auth & app shell | 📝 draft | P1 | 003 | autonomous | — |
-| 005 | Scientific validation dossier (olives) | ✅ approved · 🧑 human-in-loop | P1 | — | user | — |
-| 006 | Deployment: Contabo/YunoHost | 📝 draft | P1 | 003 | autonomous | — |
-| 007 | Data quality & uncertainty surfacing | 📝 draft | P2 | 003, 005 | autonomous | — |
+| 001 | Auth foundation (FastAPI JWT) | ✅ approved | P0 | 000 | autonomous | [DAN-6](https://linear.app/daniele-tatasciore/issue/DAN-6) |
+| 002 | Multi-tenancy data model | ✅ approved | P0 | 001 | autonomous | [DAN-7](https://linear.app/daniele-tatasciore/issue/DAN-7) |
+| 003 | Tenant-scoped API refactor | 📝 draft | P1 | 001, 002 | autonomous | [DAN-8](https://linear.app/daniele-tatasciore/issue/DAN-8) |
+| 004 | Frontend auth & app shell | 📝 draft | P1 | 003 | autonomous | [DAN-9](https://linear.app/daniele-tatasciore/issue/DAN-9) |
+| 005 | Scientific validation dossier (olives) | ✅ approved · 🧑 human-in-loop | P1 | — | user | [DAN-10](https://linear.app/daniele-tatasciore/issue/DAN-10) |
+| 006 | Deployment: Contabo/YunoHost | 📝 draft | P1 | 003 | autonomous | [DAN-11](https://linear.app/daniele-tatasciore/issue/DAN-11) |
+| 007 | Data quality & uncertainty surfacing | 📝 draft | P2 | 003, 005 | autonomous | [DAN-12](https://linear.app/daniele-tatasciore/issue/DAN-12) |
 | 008 | UX/UI & frontend polish | 🗄️ backlog | P3 | 004 | user | — |
 
 Legend: ✅ approved · 🔨 in_progress · 👀 in_review (PR open) · 🏁 done · 📝 draft · 🗄️ backlog · 🧑 human-in-loop

@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import { vi } from 'vitest';
+import { render } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
 
 // Mock child components with heavy deps (Leaflet, Chart.js)
 vi.mock('../FarmMap', () => ({ default: () => <div data-testid="farm-map" /> }));

@@ -34,6 +34,8 @@ acceptance:
   - "All endpoint tests pass in CI"
 test_plan:
   - Parametrized tests across every endpoint for unauth / cross-tenant / owner cases.
+linear_id: DAN-8
+linear_url: https://linear.app/daniele-tatasciore/issue/DAN-8/prd-003-tenant-scoped-api-refactor
 branch: prd-003-scoped-api
 notes: >
   Promote to 'approved' once PRD-002 merges.

@@ -41,6 +41,8 @@ acceptance:
   - "A clear recalibration recommendation exists, traceable to sources"
 test_plan:
   - Manual review by user; cross-check every cited claim against its source.
+linear_id: DAN-10
+linear_url: https://linear.app/daniele-tatasciore/issue/DAN-10/prd-005-scientific-validation-dossier
 branch: prd-005-validation-dossier
 notes: >
   Runner may do T1+T2 autonomously, then STOP and wait for the user (T3). Do not proceed to T4 until user fills the template.
