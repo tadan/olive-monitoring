@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "linear": {
+      "type": "sse",
+      "url": "https://mcp.linear.app/sse",
+      "headers": {
+        "Authorization": "Bearer YOUR_LINEAR_API_KEY"
+      }
+    }
+  }
+}

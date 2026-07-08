@@ -100,6 +100,16 @@ jobs:
           git config user.email "olive-runner[bot]@users.noreply.github.com"
           git config user.name "Olive Runner"
 
+      - name: Notify Linear — runner started
+        env:
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+          PRD_LINEAR_ID: ${{ needs.guard.outputs.prd_linear_id }}
+          PRD_BRANCH: ${{ needs.guard.outputs.prd_branch }}
+          PRD_ID: ${{ needs.guard.outputs.prd_id }}
+        run: |
+          python docs/prds/linear_comment.py "$PRD_LINEAR_ID" \
+            "🤖 Runner started on \`${PRD_BRANCH}\` — implementing one task from ${PRD_ID}."
+
       - name: Run autonomous agent
         timeout-minutes: 45
         env:
@@ -133,3 +143,20 @@ jobs:
               ${LINEAR_NOTE} \
               ${HUMAN_NOTE} \
               Run exactly one iteration of the loop described in RUNNER.md."
+
+      - name: Notify Linear — PR opened
+        if: always()
+        env:
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+          PRD_LINEAR_ID: ${{ needs.guard.outputs.prd_linear_id }}
+          PRD_BRANCH: ${{ needs.guard.outputs.prd_branch }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          PR_URL=$(gh pr list --head "$PRD_BRANCH" --json url --jq '.[0].url' 2>/dev/null || echo "")
+          if [ -n "$PR_URL" ]; then
+            python docs/prds/linear_comment.py "$PRD_LINEAR_ID" \
+              "🔗 PR opened: ${PR_URL}"
+          else
+            python docs/prds/linear_comment.py "$PRD_LINEAR_ID" \
+              "🤖 Runner finished on \`${PRD_BRANCH}\` — no PR found (may have failed or already exists)."
+          fi
