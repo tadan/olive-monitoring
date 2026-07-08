@@ -1,0 +1,21 @@
+Episode zero. Building the safety net.
+
+[[slnc 500]]
+
+Here's the situation. You have a working prototype. Satellites pass over the family olive grove in Abruzzo every five days, the pipeline pulls the imagery, calculates the health of the trees, and a dashboard shows it all. It works. But it grew the way prototypes grow, in a hurry, and it has no safety net.
+
+[[slnc 400]]
+
+There's no linter watching the backend code. There are no tests on the frontend at all. And there's no automated check that runs when code changes. Right now, the only thing standing between a good change and a broken one is you, paying attention.
+
+[[slnc 400]]
+
+That's a problem, because the whole point of what comes next is to let agents build while you sleep. An agent that can change code, with nothing checking its work, is a liability. So before any feature, before authentication, before any of the ambitious parts, we build the net.
+
+[[slnc 400]]
+
+This episode is about that net. A linter and formatter for the Python backend. A test runner for the React frontend, starting with one honest test that the dashboard actually renders. And a continuous integration workflow on GitHub that runs lint and tests every single time code changes. Green means safe. Red means stop.
+
+[[slnc 400]]
+
+It's not glamorous. Nobody markets a product on its test suite. But this is the floor everything else stands on. Once a green build is the rule, an agent can open a pull request, the checks run automatically, and you can trust the result before you even look. That trust is what makes the rest of this story possible.

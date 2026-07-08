@@ -1,7 +1,8 @@
 """Tests for vegetation index calculations."""
-import pytest
 import numpy as np
-from app.vegetation_indices import calculate_ndvi, calculate_ndmi, calculate_health_score
+import pytest
+
+from app.vegetation_indices import calculate_health_score, calculate_ndmi, calculate_ndvi
 
 
 def test_calculate_ndvi_with_valid_data():

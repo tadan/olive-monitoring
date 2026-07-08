@@ -1,0 +1,25 @@
+Episode six. Leaving the nest.
+
+[[slnc 500]]
+
+Everything so far has lived on the little Synology box at home. The NAS. It quietly downloads satellite imagery every five days, runs the processing, serves the dashboard through a tunnel. And for development, for demos, for you, it's perfect. It's free, it's always on, and it's already there.
+
+[[slnc 400]]
+
+But it sits on a home internet connection, behind one consumer router, a single box that, if it dies, takes the whole service with it. You cannot ask paying customers to depend on that. At some point, the product has to leave the nest.
+
+[[slnc 400]]
+
+So this episode does two things. First, it writes the honest report. Where exactly is the ceiling? At what point does the home setup stop being good enough for real tenants? That report matters not just for you, but for the incubator application, written down, in plain numbers.
+
+[[slnc 400]]
+
+Second, it actually sets up the new home: a Contabo server, which you're spinning up anyway. The app moves there, running in the same containers it already uses, fronted by a small tool called Caddy that handles secure web certificates almost by itself. Same setup at home and in production, only the address and settings differ. Portable, no surprises.
+
+[[slnc 400]]
+
+You'd mentioned YunoHost for hosting various services, and it's a lovely tool for that. But the honest recommendation is to keep this particular app standing on its own, simple containers and Caddy, rather than wedged into YunoHost's framework. Use YunoHost happily for other things, alongside, just don't make the product depend on it.
+
+[[slnc 400]]
+
+The home box keeps its job: development, demos, and the satellite processing. Production serves customers from the cloud. The nest stays useful. The bird just gets an address of its own.

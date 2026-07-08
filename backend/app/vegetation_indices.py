@@ -1,6 +1,7 @@
 """Vegetation index calculations for satellite imagery."""
-import numpy as np
 from typing import Tuple
+
+import numpy as np
 
 
 def calculate_ndvi(red: np.ndarray, nir: np.ndarray) -> np.ndarray:

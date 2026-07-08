@@ -1,0 +1,25 @@
+Episode one. The front door.
+
+[[slnc 500]]
+
+Today, anyone with the web address can see everything. That was fine when the dashboard was a transparency showcase, one farm, open to the world. But the ambition has changed. This is becoming a product that other farms pay for. And a product needs a front door.
+
+[[slnc 400]]
+
+Right now the system has no idea who anyone is. There's no concept of a user. So that's what this episode builds: the ability for someone to sign up, prove their email is real, log in, and carry a key that says, this is who I am.
+
+[[slnc 400]]
+
+That key is called a token. When you log in, the system hands you a short-lived pass, good for about fifteen minutes, plus a longer refresh pass to quietly get a new one when it expires. You never notice. You just stay logged in.
+
+[[slnc 400]]
+
+And passwords. Passwords are the thing that ruins companies when they're done carelessly. So we never store the actual password, ever. We store a one-way scramble of it, using a method called argon two, designed specifically to be slow and painful for attackers to crack. Even if the database were stolen, the passwords stay locked.
+
+[[slnc 400]]
+
+The nice detail here: the prototype already has email settings configured, sitting unused. We reuse them to send the verification email. Nothing wasted.
+
+[[slnc 400]]
+
+When this episode is done, the system finally knows who's knocking. That sounds small. But everything about multiple customers, about keeping one farm's data away from another's, depends on this one foundation. You can't separate people until you can tell them apart.

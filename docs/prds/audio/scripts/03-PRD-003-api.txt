@@ -1,0 +1,25 @@
+Episode three. Closing the open windows.
+
+[[slnc 500]]
+
+We built a front door, and we built walls between tenants. But the house still has windows propped wide open. Every data endpoint, the one that lists zones, the one that returns health readings, the dashboard summary, the history, all of them still answer anyone who asks, and they still return everything.
+
+[[slnc 400]]
+
+This episode goes through the house and closes every window. Each endpoint now demands a valid token first. No token, no answer. And each query gets routed through the gatekeeper from the last episode, so it only ever returns the caller's own organization's data.
+
+[[slnc 400]]
+
+The dashboard summary is a good example. Today it averages the health across every farm in the system. After this episode, it averages only your farms. The number finally means something to the person looking at it.
+
+[[slnc 400]]
+
+We also add the missing pieces around organizations. Creating one when you first sign up. Reading your own. Adding a teammate, so eventually more than one person from a farm can log in.
+
+[[slnc 400]]
+
+And again, we test the boundaries, every endpoint, three ways. No token gets a polite refusal. Reaching across tenants gets nothing found. Asking for your own gets a clean answer. All three, on every door.
+
+[[slnc 400]]
+
+This one stays in draft until the walls from episode two are actually merged, because there's no point scoping requests to organizations before organizations exist. Order matters. We don't get ahead of ourselves. When this lands, the back end is genuinely a multi-customer system.

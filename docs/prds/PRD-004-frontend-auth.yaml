@@ -48,6 +48,8 @@ acceptance:
 test_plan:
   - Vitest + mocked API for auth flows and interceptor refresh.
   - Vitest for onboarding wizard: mock POST /farms + POST /zones, assert GeoJSON payload shape is correct.
+linear_id: DAN-9
+linear_url: https://linear.app/daniele-tatasciore/issue/DAN-9/prd-004-frontend-auth-and-protected-app-shell
 branch: prd-004-frontend-auth
 notes: >
   Functional, not pretty — styling deferred to PRD-008. Promote to 'approved' once PRD-003 merges.

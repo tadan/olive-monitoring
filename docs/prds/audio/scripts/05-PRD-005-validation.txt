@@ -1,0 +1,29 @@
+Episode five. Is any of this even true?
+
+[[slnc 500]]
+
+This is the episode that keeps me honest, and it's the one that needs you, not an agent.
+
+[[slnc 400]]
+
+Here's the uncomfortable question at the heart of the whole project. The dashboard shows health scores for the olive grove, drawn from satellite vegetation indices. Green looks healthy, red looks stressed. But, are those numbers actually right for olives?
+
+[[slnc 400]]
+
+Because here's the catch. Most of these indices, and the thresholds that say what's healthy, were tuned for dense crops, wheat, corn, fields that are a solid carpet of green. An olive grove is the opposite. Scattered trees, wide spacing, and between them, bare soil or dry grass. From ten meters up, a satellite pixel over an olive grove is mostly ground, not leaf. So a generic threshold that screams stressed might just be seeing the dirt between healthy trees.
+
+[[slnc 400]]
+
+If we market satellite-verified olive oil to Swedish customers and to the space agency incubator, and the science underneath is borrowed from the wrong crop, that's not a bug. That's a credibility problem.
+
+[[slnc 400]]
+
+So this episode is deliberately human-led. An agent will do the grunt work: pull out exactly which indices and thresholds the code uses today, and lay them in a table. Then it builds you a research brief, the questions to ask, with empty slots to fill. And then it stops.
+
+[[slnc 400]]
+
+You take it from there, with Elicit and the actual papers. Which indices hold up for sparse canopy. What threshold ranges the literature supports for olives specifically. Real citations, no invented numbers. You fill the template, the agent assembles the dossier, and only then do we recalibrate.
+
+[[slnc 400]]
+
+This is the work that turns a pretty dashboard into something defensible. It's worth doing slowly, and doing right.

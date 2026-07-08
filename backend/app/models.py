@@ -1,7 +1,19 @@
 """SQLAlchemy models for database tables."""
-from sqlalchemy import Column, Integer, String, Text, DECIMAL, Boolean, TIMESTAMP, Date, ForeignKey, JSON
+from sqlalchemy import (
+    DECIMAL,
+    JSON,
+    TIMESTAMP,
+    Boolean,
+    Column,
+    Date,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+
 from app.database import Base
 
 

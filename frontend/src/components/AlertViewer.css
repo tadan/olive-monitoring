@@ -131,6 +131,36 @@
 }
 
 /* ============================================
+   LOAD MORE BUTTON
+   ============================================ */
+
+.load-more-button {
+  width: 100%;
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  color: var(--color-data);
+  border: var(--border-width) var(--border-style) var(--color-data);
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--letter-spacing-wide);
+  cursor: pointer;
+  transition: all var(--duration-base) var(--ease-out);
+}
+
+.load-more-button:hover {
+  background: var(--color-data);
+  color: var(--color-surface);
+}
+
+.load-more-button:active {
+  transform: translateY(1px);
+}
+
+/* ============================================
    EMPTY STATE
    ============================================ */
 

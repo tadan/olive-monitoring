@@ -41,6 +41,8 @@ acceptance:
   - "All auth tests pass in CI"
 test_plan:
   - pytest auth tests; assert 401s on missing/expired/tampered tokens.
+linear_id: DAN-6
+linear_url: https://linear.app/daniele-tatasciore/issue/DAN-6/prd-001-auth-foundation-fastapi-jwt
 branch: prd-001-auth
 notes: >
   Reuse smtp_* fields already in config.py. Do NOT log tokens or passwords.

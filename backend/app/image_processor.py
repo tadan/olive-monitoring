@@ -1,9 +1,8 @@
 """Satellite image processing for vegetation index calculation."""
 import logging
+import zipfile
 from pathlib import Path
 from typing import Dict, Optional, Tuple
-from datetime import date
-import zipfile
 
 import numpy as np
 import rasterio
@@ -12,14 +11,14 @@ from shapely.geometry import shape
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import FieldZone, SatelliteImage, HealthIndex
+from app.models import FieldZone, HealthIndex, SatelliteImage
 from app.vegetation_indices import (
-    calculate_ndvi,
-    calculate_ndmi,
     calculate_arvi,
-    calculate_osavi,
     calculate_health_score,
-    calculate_statistics
+    calculate_ndmi,
+    calculate_ndvi,
+    calculate_osavi,
+    calculate_statistics,
 )
 
 logger = logging.getLogger(__name__)
@@ -103,8 +102,6 @@ class ImageProcessor:
 
         # Try both possible resolutions
         for resolution in ['R10m', 'R20m', 'R60m']:
-            img_data_dir = product_path / "GRANULE" / "*" / "IMG_DATA" / resolution
-
             # Use glob to find the band file
             pattern = f"*_{band_name}_*.jp2"
             matches = list(product_path.glob(f"GRANULE/*/IMG_DATA/{resolution}/{pattern}"))
@@ -144,7 +141,7 @@ class ImageProcessor:
             logger.warning("SCL band not found — skipping cloud masking")
             return None
 
-        from rasterio.warp import transform_geom, reproject, Resampling
+        from rasterio.warp import Resampling, reproject, transform_geom
 
         with rasterio.open(scl_file) as src:
             geom_transformed = transform_geom('EPSG:4326', src.crs, zone_geometry)
@@ -207,9 +204,6 @@ class ImageProcessor:
             if product_path.suffix == '.zip':
                 product_path = self.extract_product_path(product_path)
 
-            # Convert GeoJSON to shapely geometry (in EPSG:4326 - lat/lon)
-            geom = shape(zone_geometry)
-
             bands = {}
             reference_shape = None
             reference_transform = None
@@ -265,7 +259,7 @@ class ImageProcessor:
 
             with rasterio.open(band_file) as src:
                 # Transform zone geometry
-                from rasterio.warp import transform_geom, reproject, Resampling
+                from rasterio.warp import Resampling, reproject, transform_geom
                 geom_transformed = transform_geom(
                     'EPSG:4326',
                     src.crs,

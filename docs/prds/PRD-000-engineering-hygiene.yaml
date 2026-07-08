@@ -1,6 +1,6 @@
 id: PRD-000
 title: Engineering hygiene & CI foundation
-status: approved
+status: in_review
 priority: P0
 depends_on: []
 model: opus
@@ -25,12 +25,14 @@ deliverables:
   - frontend vitest.config + at least one passing component test
   - .github/workflows/ci.yml
   - .pre-commit-config.yaml
+linear_id: DAN-5
+linear_url: https://linear.app/daniele-tatasciore/issue/DAN-5/prd-000-engineering-hygiene-and-ci-foundation
 tasks:
-  - {id: T1, desc: "Add pyproject.toml with ruff lint+format rules; fix existing lint errors", done: false}
-  - {id: T2, desc: "Add conftest.py with isolated test-DB fixture; make existing 4 pytest files pass against it", done: false}
-  - {id: T3, desc: "Add Vitest + RTL to frontend; smoke-test Dashboard renders without crash", done: false}
-  - {id: T4, desc: "Add .github/workflows/ci.yml: jobs backend-lint, backend-test, frontend-lint, frontend-test", done: false}
-  - {id: T5, desc: "Add .pre-commit-config.yaml (ruff, eslint)", done: false}
+  - {id: T1, desc: "Add pyproject.toml with ruff lint+format rules; fix existing lint errors", done: true}
+  - {id: T2, desc: "Add conftest.py with isolated test-DB fixture; make existing 4 pytest files pass against it", done: true}
+  - {id: T3, desc: "Add Vitest + RTL to frontend; smoke-test Dashboard renders without crash", done: true}
+  - {id: T4, desc: "Add .github/workflows/ci.yml: jobs backend-lint, backend-test, frontend-lint, frontend-test", done: true}
+  - {id: T5, desc: "Add .pre-commit-config.yaml (ruff, eslint)", done: true}
 acceptance:
   - "ruff check backend passes with zero errors"
   - "pytest backend/tests passes"

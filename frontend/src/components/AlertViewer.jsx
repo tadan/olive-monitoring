@@ -1,6 +1,7 @@
 /**
  * Alert viewer component showing health alerts for olive groves
  */
+import { useState } from 'react';
 import { format } from 'date-fns';
 import './AlertViewer.css';
 
@@ -33,6 +34,9 @@ const getSeverityIcon = (severity) => {
 };
 
 const AlertViewer = ({ alerts }) => {
+  const [showAll, setShowAll] = useState(false);
+  const INITIAL_DISPLAY = 5;
+
   if (!alerts || alerts.length === 0) {
     return (
       <div className="alert-viewer-container" role="status" aria-live="polite">
@@ -42,13 +46,9 @@ const AlertViewer = ({ alerts }) => {
     );
   }
 
-  // Group alerts by severity
-  const groupedAlerts = {
-    critical: alerts.filter(a => a.severity.toLowerCase() === 'critical'),
-    high: alerts.filter(a => a.severity.toLowerCase() === 'high'),
-    medium: alerts.filter(a => ['medium', 'warning'].includes(a.severity.toLowerCase())),
-    low: alerts.filter(a => !['critical', 'high', 'medium', 'warning'].includes(a.severity.toLowerCase())),
-  };
+  // Show only first 5 alerts initially, or all if showAll is true
+  const displayedAlerts = showAll ? alerts : alerts.slice(0, INITIAL_DISPLAY);
+  const hasMore = alerts.length > INITIAL_DISPLAY;
 
   return (
     <div className="alert-viewer-container" role="region" aria-labelledby="alerts-heading">
@@ -57,7 +57,7 @@ const AlertViewer = ({ alerts }) => {
       </div>
 
       <div className="alert-list" role="list">
-        {alerts.map((alert) => (
+        {displayedAlerts.map((alert) => (
           <div
             key={alert.id}
             className="alert-item"
@@ -92,16 +92,25 @@ const AlertViewer = ({ alerts }) => {
         ))}
       </div>
 
-      {Object.entries(groupedAlerts).map(([severity, severityAlerts]) => {
-        if (severityAlerts.length === 0) return null;
-        return (
-          <div key={severity} className="alert-summary-item">
-            <span style={{ color: getSeverityColor(severity) }}>
-              {getSeverityIcon(severity)} {severityAlerts.length} {severity}
-            </span>
-          </div>
-        );
-      })}
+      {hasMore && !showAll && (
+        <button
+          className="load-more-button"
+          onClick={() => setShowAll(true)}
+          aria-label={`Show ${alerts.length - INITIAL_DISPLAY} more alerts`}
+        >
+          Load More ({alerts.length - INITIAL_DISPLAY} more)
+        </button>
+      )}
+
+      {showAll && hasMore && (
+        <button
+          className="load-more-button"
+          onClick={() => setShowAll(false)}
+          aria-label="Show fewer alerts"
+        >
+          Show Less
+        </button>
+      )}
     </div>
   );
 };

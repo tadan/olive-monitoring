@@ -4,18 +4,18 @@ Historical analysis of Olive Grove health (2015-2025).
 Target: Mid-September data for every year.
 """
 import sys
-import time
+from datetime import date
 from pathlib import Path
-from datetime import date, timedelta
-from sqlalchemy import extract, func
+
+from sqlalchemy import extract
 
 # Add parent directory to path to ensure imports work
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.database import get_db
-from app.models import FieldZone, SatelliteImage, HealthIndex
-from app.satellite_fetcher import SatelliteFetcher
 from app.image_processor import ImageProcessor
+from app.models import FieldZone, HealthIndex, SatelliteImage
+from app.satellite_fetcher import SatelliteFetcher
 
 # Configuration
 TARGET_MONTH = 9  # September
@@ -194,9 +194,12 @@ def print_historical_report():
             trend_icon = "➡️ "
             if prev_health is not None:
                 diff = row['health'] - prev_health
-                if diff > 5: trend_icon = "↗️ 🟢 Improving"
-                elif diff < -5: trend_icon = "↘️ 🔴 Declining"
-                else: trend_icon = "➡️ 🟡 Stable"
+                if diff > 5:
+                    trend_icon = "↗️ 🟢 Improving"
+                elif diff < -5:
+                    trend_icon = "↘️ 🔴 Declining"
+                else:
+                    trend_icon = "➡️ 🟡 Stable"
             else:
                 trend_icon = "⏺️ Baseline"
 

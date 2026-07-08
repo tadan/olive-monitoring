@@ -1,16 +1,16 @@
 """Alert detection and notification system for vegetation health anomalies."""
-import logging
-from typing import Optional, List
-from datetime import datetime, timedelta
 import asyncio
+import logging
+from datetime import datetime, timedelta
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from typing import List, Optional
 
 import aiosmtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from sqlalchemy.orm import Session
 
-from app.models import Alert, HealthIndex, FieldZone, BaselineStatistic
 from app.config import settings
+from app.models import Alert, FieldZone, HealthIndex
 
 logger = logging.getLogger(__name__)
 

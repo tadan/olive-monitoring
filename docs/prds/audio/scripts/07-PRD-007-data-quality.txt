@@ -1,0 +1,25 @@
+Episode seven. Honesty about doubt.
+
+[[slnc 500]]
+
+Picture this. You open the dashboard, and a zone's health has dropped sharply since last week. Alarming. You start planning a trip to the grove. But here's what the screen didn't tell you: that reading came from an image that was forty percent cloud, covering only a handful of valid pixels. The drop isn't the olives. It's the weather, masquerading as data.
+
+[[slnc 400]]
+
+A single satellite reading can lie, quietly, by omission. Clouds, haze, gaps between passes. And if the dashboard presents every number with the same confident styling, it's misleading you, even with the math done perfectly.
+
+[[slnc 400]]
+
+This episode makes the system honest about its own doubt. Every reading starts carrying its quality with it: how cloudy the image was, how many real pixels actually fed the number, and a simple confidence flag.
+
+[[slnc 400]]
+
+Then the front end shows it. A small badge next to each metric. A tooltip that explains. And on the charts, the shaky low-confidence points get visually dimmed, while gaps in coverage are marked as gaps, not silently connected with a confident line through nothing.
+
+[[slnc 400]]
+
+This one waits for two things. The tenant-scoped back end, and the science episode, because confidence should mean what the validated thresholds say it means, not a number we made up.
+
+[[slnc 400]]
+
+It's marked optional. But I'd argue it's quietly one of the most important. The entire pitch is, trust the data. You can't credibly say that while hiding when the data doesn't deserve trust. Showing the doubt is what earns the belief.

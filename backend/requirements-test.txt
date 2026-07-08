@@ -1,0 +1,6 @@
+-r requirements-api.txt
+numpy>=1.26.0
+shapely>=2.0.0
+requests>=2.31.0
+sentinelsat>=1.2.0
+pytest-mock>=3.12.0

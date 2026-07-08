@@ -44,6 +44,8 @@ acceptance:
 test_plan:
   - Seed two orgs with zones; assert strict isolation across all tenant-owned tables.
   - Insert a zone with a hand-crafted GeoJSON polygon (simulating user drawing); assert it is stored and returned correctly.
+linear_id: DAN-7
+linear_url: https://linear.app/daniele-tatasciore/issue/DAN-7/prd-002-multi-tenancy-data-model
 branch: prd-002-multitenancy
 notes: >
   Decision locked: shared DB + org_id + app-layer filtering. RLS is a later hardening PRD.

@@ -1,0 +1,4 @@
+# Generated audio — regenerate with ./generate.sh. Source of truth is scripts/ + the PRD YAML.
+episodes/
+*.m4a
+*.aiff

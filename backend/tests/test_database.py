@@ -1,25 +1,18 @@
 """Tests for database connection and models."""
-import pytest
-from app.database import get_db_engine, get_session
-from app.models import FieldZone, SatelliteImage, HealthIndex, Alert
 from sqlalchemy import text
 
-
-def test_database_engine_creation():
-    """Test that database engine can be created."""
-    engine = get_db_engine()
-
-    assert engine is not None
-    assert "postgresql" in str(engine.url)
+from app.models import Alert, FieldZone, HealthIndex, SatelliteImage
 
 
-def test_database_connection():
-    """Test that we can connect to the database."""
-    engine = get_db_engine()
+def test_database_engine_creation(test_engine):
+    """Test that an engine can be created (uses SQLite fixture in CI)."""
+    assert test_engine is not None
 
-    with engine.connect() as connection:
-        result = connection.execute(text("SELECT 1"))
-        assert result.fetchone()[0] == 1
+
+def test_database_connection(db_connection):
+    """Test that we can execute SQL against the test DB."""
+    result = db_connection.execute(text("SELECT 1"))
+    assert result.fetchone()[0] == 1
 
 
 def test_field_zone_model_has_required_fields():
