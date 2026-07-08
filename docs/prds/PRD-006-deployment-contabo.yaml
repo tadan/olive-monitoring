@@ -38,7 +38,7 @@ test_plan:
   - Dry-run the runbook on the Contabo VPS; verify HTTPS + a restore.
 linear_id: DAN-11
 linear_url: https://linear.app/daniele-tatasciore/issue/DAN-11/prd-006-deployment-contabo
-branch: prd-006-deployment
+branch: DAN-11-prd-006-deployment
 notes: >
   User is activating Contabo + may run YunoHost for OTHER services. App must not depend on YunoHost. Promote to
   'approved' once PRD-003 merges (prod deploy assumes auth/tenancy exist).

@@ -106,6 +106,8 @@ def main() -> None:
     _write_output("prd_id", next_prd["id"])
     _write_output("prd_branch", next_prd.get("branch", ""))
     _write_output("prd_human_in_loop", str(next_prd.get("human_in_loop", False)).lower())
+    _write_output("prd_linear_id", next_prd.get("linear_id", ""))
+    _write_output("prd_linear_url", next_prd.get("linear_url", ""))
 
 
 if __name__ == "__main__":

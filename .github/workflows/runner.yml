@@ -18,6 +18,8 @@ jobs:
       prd_id: ${{ steps.next-prd.outputs.prd_id }}
       prd_branch: ${{ steps.next-prd.outputs.prd_branch }}
       prd_human_in_loop: ${{ steps.next-prd.outputs.prd_human_in_loop }}
+      prd_linear_id: ${{ steps.next-prd.outputs.prd_linear_id }}
+      prd_linear_url: ${{ steps.next-prd.outputs.prd_linear_url }}
       should_run: ${{ steps.gate.outputs.should_run }}
 
     steps:
@@ -98,6 +100,16 @@ jobs:
           git config user.email "olive-runner[bot]@users.noreply.github.com"
           git config user.name "Olive Runner"
 
+      - name: Notify Linear — runner started
+        env:
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+          PRD_LINEAR_ID: ${{ needs.guard.outputs.prd_linear_id }}
+          PRD_BRANCH: ${{ needs.guard.outputs.prd_branch }}
+          PRD_ID: ${{ needs.guard.outputs.prd_id }}
+        run: |
+          python docs/prds/linear_comment.py "$PRD_LINEAR_ID" \
+            "🤖 Runner started on \`${PRD_BRANCH}\` — implementing one task from ${PRD_ID}."
+
       - name: Run autonomous agent
         timeout-minutes: 45
         env:
@@ -106,6 +118,8 @@ jobs:
           PRD_ID: ${{ needs.guard.outputs.prd_id }}
           PRD_BRANCH: ${{ needs.guard.outputs.prd_branch }}
           PRD_HUMAN_IN_LOOP: ${{ needs.guard.outputs.prd_human_in_loop }}
+          PRD_LINEAR_ID: ${{ needs.guard.outputs.prd_linear_id }}
+          PRD_LINEAR_URL: ${{ needs.guard.outputs.prd_linear_url }}
         run: |
           HUMAN_NOTE=""
           if [ "$PRD_HUMAN_IN_LOOP" = "true" ]; then
@@ -114,11 +128,35 @@ jobs:
               Stop immediately after — do NOT attempt tasks reserved for the human."
           fi
 
+          LINEAR_NOTE=""
+          if [ -n "$PRD_LINEAR_ID" ]; then
+            LINEAR_NOTE="Linear issue: ${PRD_LINEAR_ID} (${PRD_LINEAR_URL}). \
+              Include '${PRD_LINEAR_ID}' in the PR title so Linear auto-links it."
+          fi
+
           claude --dangerously-skip-permissions \
             --model claude-opus-4-8 \
             --max-turns 20 \
             -p "You are the olive-monitoring autonomous runner. \
               Read docs/prds/RUNNER.md for the full protocol. \
               The next eligible PRD is ${PRD_ID} on branch ${PRD_BRANCH}. \
+              ${LINEAR_NOTE} \
               ${HUMAN_NOTE} \
               Run exactly one iteration of the loop described in RUNNER.md."
+
+      - name: Notify Linear — PR opened
+        if: always()
+        env:
+          LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
+          PRD_LINEAR_ID: ${{ needs.guard.outputs.prd_linear_id }}
+          PRD_BRANCH: ${{ needs.guard.outputs.prd_branch }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          PR_URL=$(gh pr list --head "$PRD_BRANCH" --json url --jq '.[0].url' 2>/dev/null || echo "")
+          if [ -n "$PR_URL" ]; then
+            python docs/prds/linear_comment.py "$PRD_LINEAR_ID" \
+              "🔗 PR opened: ${PR_URL}"
+          else
+            python docs/prds/linear_comment.py "$PRD_LINEAR_ID" \
+              "🤖 Runner finished on \`${PRD_BRANCH}\` — no PR found (may have failed or already exists)."
+          fi
