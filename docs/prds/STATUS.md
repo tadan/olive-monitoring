@@ -7,7 +7,7 @@ lifecycle and `RUNNER.md` for how the build loop works._
 
 | PRD | Title | Status | Pri | Depends on | Owner | Linear |
 |-----|-------|--------|-----|------------|-------|--------|
-| 000 | Engineering hygiene & CI foundation | 👀 in_review | P0 | — | autonomous | [DAN-5](https://linear.app/daniele-tatasciore/issue/DAN-5) |
+| 000 | Engineering hygiene & CI foundation | 🏁 done | P0 | — | autonomous | [DAN-5](https://linear.app/daniele-tatasciore/issue/DAN-5) |
 | 001 | Auth foundation (FastAPI JWT) | ✅ approved | P0 | 000 | autonomous | [DAN-6](https://linear.app/daniele-tatasciore/issue/DAN-6) |
 | 002 | Multi-tenancy data model | ✅ approved | P0 | 001 | autonomous | [DAN-7](https://linear.app/daniele-tatasciore/issue/DAN-7) |
 | 003 | Tenant-scoped API refactor | 📝 draft | P1 | 001, 002 | autonomous | [DAN-8](https://linear.app/daniele-tatasciore/issue/DAN-8) |

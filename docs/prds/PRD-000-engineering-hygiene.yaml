@@ -1,6 +1,6 @@
 id: PRD-000
 title: Engineering hygiene & CI foundation
-status: in_review
+status: done
 priority: P0
 depends_on: []
 model: opus
