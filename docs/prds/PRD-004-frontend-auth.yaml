@@ -48,7 +48,7 @@ test_plan:
   - Vitest for onboarding wizard: mock POST /farms + POST /zones, assert GeoJSON payload shape is correct.
 linear_id: DAN-9
 linear_url: https://linear.app/daniele-tatasciore/issue/DAN-9/prd-004-frontend-auth-and-protected-app-shell
-branch: prd-004-frontend-auth
+branch: DAN-9-prd-004-frontend-auth
 notes: >
   Functional, not pretty — styling deferred to PRD-008. Promote to 'approved' once PRD-003 merges.
   T6 depends on PRD-003 having POST /farms and POST /farms/{id}/zones endpoints available.
