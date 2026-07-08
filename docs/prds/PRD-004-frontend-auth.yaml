@@ -16,9 +16,7 @@ scope:
   - Login + signup + email-verify pages.
   - Auth context/provider storing tokens; axios interceptor attaches access token and refreshes on 401.
   - Protected routes; redirect unauthenticated users to login.
-  - Post-signup onboarding wizard: (1) name the farm, (2) draw the zone boundary on a Leaflet map using
-    Leaflet.PM or leaflet-draw, (3) confirm and submit to POST /farms + POST /farms/{id}/zones (PRD-003).
-    User lands on their org-scoped dashboard only after completing this step.
+  - "Post-signup onboarding wizard: (1) name the farm, (2) draw the zone boundary on a Leaflet map using Leaflet.PM or leaflet-draw, (3) confirm and submit to POST /farms + POST /farms/{id}/zones (PRD-003). User lands on their org-scoped dashboard only after completing this step."
   - Show current org; if a user has multiple orgs, a simple switcher (else hidden).
   - Logout.
 out_of_scope:

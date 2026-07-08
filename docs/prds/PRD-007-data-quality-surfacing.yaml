@@ -17,16 +17,11 @@ goal: >
   Each displayed metric carries honest quality context (cloud %, valid pixel count, confidence, gaps) so users are
   not misled. Cloud masking metadata computed during processing is durably stored and surfaced in the UI.
 scope:
-  - DB migration: add cloud_fraction_pct (float), valid_pixel_count (int), cloudy_pixel_count (int) to
-    health_indices; add cloud_skipped (bool, default false) + cloud_fraction_pct to a new skipped-scene record
-    (or a separate cloud_skip_log table) so >50%-cloudy passes are recorded, not silently dropped.
-  - Update image_processor.extract_bands to write cloud_fraction_pct, valid_pixel_count, cloudy_pixel_count
-    after masking; write a skip record when MAX_CLOUD_FRACTION is exceeded.
+  - "DB migration: add cloud_fraction_pct (float), valid_pixel_count (int), cloudy_pixel_count (int) to health_indices; add cloud_skipped (bool, default false) + cloud_fraction_pct to a new skipped-scene record (or a separate cloud_skip_log table) so >50%-cloudy passes are recorded, not silently dropped."
+  - "Update image_processor.extract_bands to write cloud_fraction_pct, valid_pixel_count, cloudy_pixel_count after masking; write a skip record when MAX_CLOUD_FRACTION is exceeded."
   - Run reprocess_with_cloud_mask.py on historical data to backfill cloud columns for existing rows.
-  - Review SCL_MASK_CLASSES completeness: evaluate adding class 2 (dark-area / terrain shadow) and
-    class 11 (snow/ice — relevant for late-autumn Abruzzo imagery). Document the decision with rationale.
-  - API: expose cloud_fraction_pct, valid_pixel_count, confidence flag per zone/date; include cloud_skipped
-    dates in the history response so the frontend can mark them.
+  - "Review SCL_MASK_CLASSES completeness: evaluate adding class 2 (dark-area / terrain shadow) and class 11 (snow/ice — relevant for late-autumn Abruzzo imagery). Document the decision with rationale."
+  - "API: expose cloud_fraction_pct, valid_pixel_count, confidence flag per zone/date; include cloud_skipped dates in the history response so the frontend can mark them."
   - Frontend: show quality badges + a tooltip; visually de-emphasize low-confidence points on charts.
   - Mark/flag data gaps on the time series; distinguish "no data" from "cloud-skipped."
 out_of_scope:
