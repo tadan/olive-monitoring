@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "date": "2026-07-09",
+    "prd": "PRD-001",
+    "task": "T1",
+    "task_desc": "Add users model + migration; add JWT_SECRET + token TTLs to config.py",
+    "branch": "DAN-6-prd-001-auth",
+    "pr_url": "https://github.com/tadan/olive-monitoring/pull/6",
+    "tokens_estimate": 45000,
+    "notes": "Added User SQLAlchemy model, migrate_add_users.sql migration, JWT/token-TTL settings in config.py, and tests. Gate green: ruff + pytest (22 passed)."
+  }
+]

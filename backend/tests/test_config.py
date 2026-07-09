@@ -36,3 +36,28 @@ def test_settings_has_copernicus_credentials(monkeypatch):
 
     assert settings.copernicus_username == "testuser"
     assert settings.copernicus_password == "testpass"
+
+
+def test_settings_has_jwt_defaults():
+    """Test that JWT/auth settings expose sensible defaults (PRD-001)."""
+    settings = Settings()
+
+    assert settings.jwt_algorithm == "HS256"
+    assert settings.access_token_ttl_minutes == 15
+    assert settings.refresh_token_ttl_days == 30
+    assert settings.email_verification_ttl_hours == 24
+    # A secret always exists so local/test runs work; it must be overridable.
+    assert settings.jwt_secret
+
+
+def test_jwt_settings_load_from_environment(monkeypatch):
+    """Test that JWT settings can be overridden from the environment."""
+    monkeypatch.setenv("JWT_SECRET", "super-secret")
+    monkeypatch.setenv("ACCESS_TOKEN_TTL_MINUTES", "5")
+    monkeypatch.setenv("REFRESH_TOKEN_TTL_DAYS", "7")
+
+    settings = Settings()
+
+    assert settings.jwt_secret == "super-secret"
+    assert settings.access_token_ttl_minutes == 5
+    assert settings.refresh_token_ttl_days == 7

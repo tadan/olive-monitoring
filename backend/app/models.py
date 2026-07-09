@@ -17,6 +17,17 @@ from sqlalchemy.sql import func
 from app.database import Base
 
 
+class User(Base):
+    """Model for users table (authentication foundation — PRD-001)."""
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(255), unique=True, nullable=False, index=True)
+    password_hash = Column(String(255), nullable=False)
+    is_verified = Column(Boolean, nullable=False, default=False)
+    created_at = Column(TIMESTAMP, server_default=func.now())
+
+
 class FieldZone(Base):
     """Model for field_zones table."""
     __tablename__ = "field_zones"

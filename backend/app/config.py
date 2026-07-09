@@ -27,6 +27,15 @@ class Settings(BaseSettings):
     smtp_password: str = Field(default="", env="SMTP_PASSWORD")
     alert_email: str = Field(default="", env="ALERT_EMAIL")
 
+    # Authentication / JWT configuration
+    # NOTE: JWT_SECRET must be overridden in every non-local environment. The default
+    # is intentionally insecure and only exists so local dev / tests can run.
+    jwt_secret: str = Field(default="insecure-dev-secret-change-me", env="JWT_SECRET")
+    jwt_algorithm: str = Field(default="HS256", env="JWT_ALGORITHM")
+    access_token_ttl_minutes: int = Field(default=15, env="ACCESS_TOKEN_TTL_MINUTES")
+    refresh_token_ttl_days: int = Field(default=30, env="REFRESH_TOKEN_TTL_DAYS")
+    email_verification_ttl_hours: int = Field(default=24, env="EMAIL_VERIFICATION_TTL_HOURS")
+
     class Config:
         env_file = ".env"
         case_sensitive = False

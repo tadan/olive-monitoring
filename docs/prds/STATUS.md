@@ -3,12 +3,12 @@
 _One-screen progress view. The autonomous runner updates this when it changes a PRD's state. See `README.md` for the
 lifecycle and `RUNNER.md` for how the build loop works._
 
-**Last updated:** 2026-07-08
+**Last updated:** 2026-07-09
 
 | PRD | Title | Status | Pri | Depends on | Owner | Linear |
 |-----|-------|--------|-----|------------|-------|--------|
 | 000 | Engineering hygiene & CI foundation | 🏁 done | P0 | — | autonomous | [DAN-5](https://linear.app/daniele-tatasciore/issue/DAN-5) |
-| 001 | Auth foundation (FastAPI JWT) | ✅ approved | P0 | 000 | autonomous | [DAN-6](https://linear.app/daniele-tatasciore/issue/DAN-6) |
+| 001 | Auth foundation (FastAPI JWT) | 🔨 in_progress | P0 | 000 | autonomous | [DAN-6](https://linear.app/daniele-tatasciore/issue/DAN-6) |
 | 002 | Multi-tenancy data model | ✅ approved | P0 | 001 | autonomous | [DAN-7](https://linear.app/daniele-tatasciore/issue/DAN-7) |
 | 003 | Tenant-scoped API refactor | 📝 draft | P1 | 001, 002 | autonomous | [DAN-8](https://linear.app/daniele-tatasciore/issue/DAN-8) |
 | 004 | Frontend auth & app shell | 📝 draft | P1 | 003 | autonomous | [DAN-9](https://linear.app/daniele-tatasciore/issue/DAN-9) |
