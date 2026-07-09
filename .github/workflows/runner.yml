@@ -100,6 +100,18 @@ jobs:
           git config user.email "olive-runner[bot]@users.noreply.github.com"
           git config user.name "Olive Runner"
 
+      - name: Trust this workspace for Claude Code
+        run: |
+          cat > /home/runner/.claude.json <<'EOF'
+          {
+            "projects": {
+              "/home/runner/work/olive-monitoring/olive-monitoring": {
+                "hasTrustDialogAccepted": true
+              }
+            }
+          }
+          EOF
+
       - name: Notify Linear — runner started
         env:
           LINEAR_API_KEY: ${{ secrets.LINEAR_API_KEY }}
