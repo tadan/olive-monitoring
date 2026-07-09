@@ -148,7 +148,8 @@ jobs:
 
           claude --dangerously-skip-permissions \
             --model claude-opus-4-8 \
-            --max-turns 20 \
+            --max-turns 80 \
+            --verbose \
             -p "You are the olive-monitoring autonomous runner. \
               Read docs/prds/RUNNER.md for the full protocol. \
               The next eligible PRD is ${PRD_ID} on branch ${PRD_BRANCH}. \
