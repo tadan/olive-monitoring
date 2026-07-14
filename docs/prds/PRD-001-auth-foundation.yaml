@@ -1,6 +1,6 @@
 id: PRD-001
 title: Auth foundation (FastAPI JWT)
-status: approved
+status: in_progress
 priority: P0
 depends_on: [PRD-000]
 model: opus
@@ -29,7 +29,7 @@ deliverables:
   - auth endpoints wired into main.py
   - tests covering register/verify/login/refresh/me + bad-credential paths
 tasks:
-  - {id: T1, desc: "Add users model + migration; add JWT_SECRET + token TTLs to config.py", done: false}
+  - {id: T1, desc: "Add users model + migration; add JWT_SECRET + token TTLs to config.py", done: true}
   - {id: T2, desc: "Implement auth.py: argon2id hashing, access/refresh JWT, get_current_user dep", done: false}
   - {id: T3, desc: "Implement register + email verification (reuse SMTP config)", done: false}
   - {id: T4, desc: "Implement login + refresh (rotating refresh tokens)", done: false}
