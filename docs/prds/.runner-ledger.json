@@ -8,5 +8,15 @@
     "pr_url": "https://github.com/tadan/olive-monitoring/pull/6",
     "tokens_estimate": 45000,
     "notes": "Added User SQLAlchemy model, migrate_add_users.sql migration, JWT/token-TTL settings in config.py, and tests. Gate green: ruff + pytest (22 passed)."
+  },
+  {
+    "date": "2026-07-14",
+    "prd": "PRD-005",
+    "task": "T1+T2",
+    "task_desc": "AGENT scaffolding: extract current indices/thresholds into current-thresholds.md; draft elicit-research-brief.md with questions + empty findings template.",
+    "branch": "DAN-10-prd-005-validation-dossier",
+    "pr_url": "https://github.com/tadan/olive-monitoring/pull/7",
+    "tokens_estimate": 60000,
+    "notes": "human_in_loop PRD; did only AGENT-tagged unblocked tasks (T1, T2), then STOPPED. T3 is USER (Elicit research); T4 blocked until template filled. Docs-only. Gate green: ruff + pytest (22 passed). PR url filled after gh."
   }
 ]
