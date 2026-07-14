@@ -1,6 +1,6 @@
 id: PRD-005
 title: Scientific validation dossier — vegetation indices for OLIVE groves
-status: approved
+status: in_progress
 priority: P1
 depends_on: []
 model: opus
@@ -31,8 +31,8 @@ deliverables:
   - docs/validation/olive-index-dossier.md (assembled from user findings, cited)
   - threshold recalibration proposal (diff or follow-up PRD)
 tasks:
-  - {id: T1, desc: "AGENT: extract current indices + threshold values + where they're used into current-thresholds.md", done: false}
-  - {id: T2, desc: "AGENT: draft elicit-research-brief.md (key questions: best indices for sparse olive canopy, soil-adjusted indices, valid NDVI/NDMI ranges, seasonality, 10m resolution limits) + findings template", done: false}
+  - {id: T1, desc: "AGENT: extract current indices + threshold values + where they're used into current-thresholds.md", done: true}
+  - {id: T2, desc: "AGENT: draft elicit-research-brief.md (key questions: best indices for sparse olive canopy, soil-adjusted indices, valid NDVI/NDMI ranges, seasonality, 10m resolution limits) + findings template", done: true}
   - {id: T3, desc: "USER: run Elicit + papers, fill the findings template with cited values", done: false}
   - {id: T4, desc: "AGENT: assemble cited dossier; propose recalibrated thresholds (no invented numbers)", done: false}
 acceptance:
