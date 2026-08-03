@@ -17,6 +17,12 @@
 > researched, inferred, or completed by an agent: where the user's findings did not state a value
 > (DOI, r², RMSE, region), the field reads *"Not reported in source material."* rather than being
 > filled from model knowledge. This unblocks **T4**.
+>
+> Two provenances are deliberately kept apart in this file. **Literature** (the S1–S17 blocks and the
+> `Proposed value` / `Verdict` / `Source(s)` columns) comes from DAN-16. **Code facts** (the
+> `Current value` column with its `file:line` citations, and anything labelled as such) come from a
+> separate **read-only codebase audit dated 2026-08-03**, which confirmed the current values against
+> source. Where the two disagree, say which one you mean. This document changed **no code**.
 
 ## A. Research questions
 
@@ -91,6 +97,23 @@ _(repeat the block per source — the block above is the blank exemplar; the fil
 > **Defensible replacement claim:** *seasonal change in ARVI/OSAVI is a useful orchard-scale
 > indicator of Xylella-associated decline when canopy structure, season and soil background are
 > modelled or corrected for — and it is not evidence that either index is Xylella-specific.*
+
+> **Third headline finding — the soil-adjustment question is currently moot, and that changes the
+> order of work.** *(Source: read-only codebase audit, 2026-08-03 — a code fact, not a literature
+> finding.)* The backend performs **no radiometric scaling anywhere**: Sentinel-2 L2A bands are read
+> as **raw digital numbers** (~1000–5000) and never converted to reflectance
+> (`image_processor.py:239`, `:272`; there is no `/10000` anywhere). `L = 0.16` is defined for
+> reflectance in `[0,1]`. Applied instead to a denominator of ~4000 DN it changes the result by
+> roughly **0.004%** — so **OSAVI is numerically identical to NDVI** at the four decimal places the
+> database stores (`models.py:85`, `DECIMAL(5,4)`). `vegetation_indices.py:151` additionally omits
+> the canonical `(1+L)` multiplier that `Claude.md:257` documents.
+>
+> **Consequence for T4:** the soil-adjustment discussion in this research (S9, S6, S7 → Q2) is sound
+> and relevant, but it has **no effect on this product's output today**, and **`L` cannot be
+> meaningfully validated or tuned until reflectance scaling is fixed.** Ratio indices (NDVI, ARVI)
+> are scale-invariant and survive raw DN; any index with an additive constant does not. Fixing
+> scaling is therefore a **prerequisite** to the Q2 recalibration, not a parallel task — sequence it
+> first in any recalibration plan.
 
 Source-material notes that apply to **every** block below:
 - **No DOI or link was recorded for any paper** in the research comments, so every `Link / DOI`
@@ -306,28 +329,28 @@ Source-material notes that apply to **every** block below:
 
 ### Consolidated recommendation table (fill after reading sources)
 
-> **All "current value" entries below are UNVERIFIED in this pass.** They were transcribed from
-> planning material, not re-read out of the Python source by whoever filled this table.
-> [`current-thresholds.md`](./current-thresholds.md) claims to be code-derived and cites file/line
-> for each — **treat that file, and ultimately the code, as the source of truth** and re-verify each
-> value before acting on a row. No code was read or changed while filling this section.
+> **Current values are CONFIRMED against the code** by a read-only codebase audit (2026-08-03) and
+> are cited `file:line` below. They are no longer provisional. Two entries carry a caveat, marked
+> inline. Note that `Current value` and its `Notes` describe **code facts from that audit**, not
+> literature — the `Proposed value`, `Verdict` and `Source(s)` columns are the literature side.
+> **No code was read or changed by this document; it is documentation only.**
 >
 > The `Q#` column maps each row back to the §A research question, so coverage of all eight is
 > checkable. A "Verdict" column was added to the original template columns (see §C note below).
 
-| Q# | Our param (ref current-thresholds.md) | Current value *(unverified)* | Proposed value (literature-supported) | Verdict | Source(s) S# | Confidence | Notes |
-|----|---------------------------------------|------------------------------|---------------------------------------|---------|--------------|------------|-------|
-| Q3 | NDVI "healthy" band (§2) | 0.5–0.7 | No absolute band. Healthy = within the orchard's own seasonal envelope; watch = persistent negative departure (provisionally lower 20–25th pct of the healthy baseline); severe = lower 5–10th pct, field-confirmed | **Retract** | S8, S10, S11 | Not reported | S8 measured a *hedgerow* (dense) olive orchard at 0.28–0.81 over two years and 0.28–0.41 in summer — i.e. below our "healthy" floor while not unhealthy. Percentiles are calibration starting points, not biological constants |
-| Q2 | OSAVI soil factor `L` (§1) | 0.16 | Keep `0.16` as a **benchmark**, but tune empirically: compute SAVI at `L = 0, 0.1, 0.25, 0.5, 0.75, 1.0`, stratify by olive-crown fraction and background class (bare soil / dry grass / green grass), and select on **soil-background stability**, not best in-sample disease correlation | **Unproven — keep, justify, do not retune blind** | S9, S6, S7 | Not reported | `0.16` is the generic OSAVI constant; **no olive-specific justification and no citation for the value itself appears anywhere in the source material**. Do *not* auto-swap to SAVI `L=1.0`; where inter-row grass is substantial the right fix is background masking / fractional-cover modelling, not more `L` tuning |
-| Q4 | Drought floor NDMI (§4) | −0.2 | No absolute floor. Two-stage rule: spectral trigger = NDMI below the orchard's seasonal baseline for ≥2 observations (moderate ≈ lower 20–25th pct, severe ≈ lower 5–10th pct), then **thermal confirmation** via CWSI or anomalous canopy temperature | **Retract** | S12, S10, S13, S14 | Not reported | No source supplies any absolute NDMI cut-off for olives. Also fix the index definition: state B8/B8A + B11 (NDWI-Gao) explicitly; B11 is 20 m and must be resampled. McFeeters NDWI is a different, open-water index |
-| Q4 | Waterlog ceiling NDMI (§4) | 0.5 | **Not addressed by any source in this research.** No paper surfaced supports or refutes an NDMI waterlogging ceiling for olives | **Unsupported — no evidence either way** | — | Not reported | Genuine gap; see Open question 3 |
-| Q7 | NDVI-drop alert (§4) | −0.15 | Replace the fixed absolute drop with a standardized anomaly against a phenology-aware baseline: `Z = (VI − median(VI_healthy,season)) / (1.4826 × MAD)`; watch at `Z ≤ −1.5`, alert at `Z ≤ −2`. Relative alternative: 15–20% decline from the seasonal baseline, stronger alert ≈25–30% | **Retract (form is wrong, not just the number)** | S15, S16, S6, S10, S11 | Not reported | Must add **persistence** (≥2 consecutive valid observations, or 3 within 30 days) and **spatial coherence**; and separate management events (harvest, pruning, mowing, tillage, irrigation) from stress. A single-date drop is commonly cloud, shadow, BRDF or harvest traffic |
-| Q7 | Anomaly σ threshold (§5) | 2.0 | Keep `2σ`-equivalent as the **alert** level but add a `1.5σ` "watch" level, and prefer the **MAD-based** robust `Z` over a plain standard deviation | **Refine** | S15, S16, S11 | Not reported | The `Z ≤ −2` alert / `Z ≤ −1.5` watch pair is described in the source material as a **calibration starting point, not a universal biological limit**. MAD is recommended because cloud contamination and management events create outliers |
-| Q8 | Health-score weights (§3) | ARVI/OSAVI/NDVI/NDMI = .30/.30/.20/.20 | **No source supports any weighting.** Nothing in this research proposes or validates a composite weighting of these four indices | **Retract the "research-backed" wording** | — | Not reported | §6 flags the phrase "research-backed" as uncited; this research does not rescue it. See Open question 3 |
-| Q5 | Baseline min samples / seasons (§5) | 3 / meteorological | Phenology-aware, locally calibrated windows rather than fixed meteorological months; a rolling **21–45-day** baseline window; compare like-with-like (spring vs spring). Olive is evergreen — expect a **modulated plateau**, not a deciduous green-up/senescence curve | **Refine** | S15, S16, S17, S6, S13 | Not reported | **No source states a minimum sample count**, so `MIN_SAMPLES = 3` is neither supported nor refuted (Open question 3). Watch the winter trap: NDVI/OSAVI can rise Nov–Feb because of **inter-row grass after winter rain**, not olive recovery |
-| Q1 | Index set for sparse olive canopy (§1) | NDVI + NDMI + ARVI + OSAVI, no canopy-fraction term | **OSAVI + MCARI2/OSAVI + canopy fraction + a soil/grass mask**, with NDVI kept as a reference/cover proxy; add red-edge and thermal where available. Model the mixed pixel: `VI_pixel = f_olive·VI_olive + (1−f_olive)·VI_background` | **Refine — the missing piece is canopy fraction, not the index list** | S6, S7, S8 | Not reported | The gap is not NDVI-vs-OSAVI; it is that we have **no canopy-fraction term and no inter-row mask**, so every index we compute is a mixed-signal measurement. Use surface reflectance, not TOA; keep the band convention fixed (B4/B8; do not mix B8 and B8A without recalibration) |
+| Q# | Our param (ref current-thresholds.md) | Current value — **confirmed** `file:line` | Proposed value (literature-supported) | Verdict | Source(s) S# | Confidence | Notes |
+|----|---------------------------------------|-------------------------------------------|---------------------------------------|---------|--------------|------------|-------|
+| Q3 | NDVI "healthy" band (§2) | `0.5–0.7` — `vegetation_indices.py:14–17` (docstring, **not** branch-enforced) | No absolute band. Healthy = within the orchard's own seasonal envelope; watch = persistent negative departure (provisionally lower 20–25th pct of the healthy baseline); severe = lower 5–10th pct, field-confirmed | **Retract** | S8, S10, S11 | Not reported | It is **not merely documentation**: `:195` (`ndvi_score = ndvi_mean * 100`) hard-wires the same linear assumption numerically into the health score. S8 measured a *hedgerow* (dense) olive orchard at 0.28–0.81 over two years and 0.28–0.41 in summer — below our "healthy" floor while not unhealthy. Percentiles are calibration starting points, not biological constants |
+| Q2 | OSAVI soil factor `L` (§1) | `0.16` — `vegetation_indices.py:116`, signature default `soil_factor: float = 0.16` | Keep `0.16` as a **benchmark**, but tune empirically: compute SAVI at `L = 0, 0.1, 0.25, 0.5, 0.75, 1.0`, stratify by olive-crown fraction and background class (bare soil / dry grass / green grass), and select on **soil-background stability**, not best in-sample disease correlation | **Moot until reflectance scaling is fixed — then unproven** | S9, S6, S7 | Not reported | **`L` currently has no effect on output** — see the third headline callout: bands are raw DN, so `0.16` against a ~4000 DN denominator shifts OSAVI by ~0.004% and it stores identically to NDVI at `DECIMAL(5,4)`. Separately, `:151` omits the canonical `(1+L)` multiplier that `Claude.md:257` documents. Literature-side: `0.16` is the generic OSAVI constant with **no olive-specific justification and no citation for the value itself anywhere in the source material**. Do *not* auto-swap to SAVI `L=1.0`; where inter-row grass is substantial the right fix is background masking / fractional-cover modelling |
+| Q4 | Drought floor NDMI (§4) | `−0.2` — `alerts.py:23` (`DROUGHT_STRESS_THRESHOLD`) | No absolute floor. Two-stage rule: spectral trigger = NDMI below the orchard's seasonal baseline for ≥2 observations (moderate ≈ lower 20–25th pct, severe ≈ lower 5–10th pct), then **thermal confirmation** via CWSI or anomalous canopy temperature | **Retract** | S12, S10, S13, S14 | Not reported | No source supplies any absolute NDMI cut-off for olives. Also fix the index definition: state B8/B8A + B11 (NDWI-Gao) explicitly; B11 is 20 m and must be resampled. McFeeters NDWI is a different, open-water index |
+| Q4 | Waterlog ceiling NDMI (§4) | `0.5` — `alerts.py:24` (`WATERLOG_THRESHOLD`) — **but internally contradicted** | **Not addressed by any source in this research.** No paper surfaced supports or refutes an NDMI waterlogging ceiling for olives | **Unsupported — no evidence either way; and internally inconsistent** | — | Not reported | **Two waterlogging thresholds ship simultaneously:** `alerts.py:24` fires an alert at `≥ 0.5`, while `vegetation_indices.py:210` already penalises the health score above `0.4` and `:50` documents `> 0.4` as waterlogged. The literature settles neither, but the internal contradiction is a code fact and should be reconciled regardless. Genuine literature gap; see Open question 3 |
+| Q7 | NDVI-drop alert (§4) | `−0.15` — `alerts.py:22` (`NDVI_DROP_THRESHOLD`) | Replace the fixed absolute drop with a standardized anomaly against a phenology-aware baseline: `Z = (VI − median(VI_healthy,season)) / (1.4826 × MAD)`; watch at `Z ≤ −1.5`, alert at `Z ≤ −2`. Relative alternative: 15–20% decline from the seasonal baseline, stronger alert ≈25–30% | **Retract (form is wrong, not just the number)** | S15, S16, S6, S10, S11 | Not reported | The inline comment `# 15% drop in NDVI` is **wrong**: `:94` computes an **absolute** difference, not a percentage. So the code is neither the absolute rule its constant implies nor the relative rule its comment claims. Must add **persistence** (≥2 consecutive valid observations, or 3 within 30 days) and **spatial coherence**, and separate management events (harvest, pruning, mowing, tillage, irrigation) from stress — a single-date drop is commonly cloud, shadow, BRDF or harvest traffic |
+| Q7 | Anomaly σ threshold (§5) | `2.0` — `baseline.py:256`, logic at `:280–283` — **DEAD CODE, nothing calls it** | Keep `2σ`-equivalent as the **alert** level but add a `1.5σ` "watch" level, and prefer the **MAD-based** robust `Z` over a plain standard deviation | **Refine — and wire it up** | S15, S16, S11 | Not reported | **The approach the literature recommends is already implemented and simply not connected.** All alerting runs off the fixed absolute constants above. Wiring this up is the single highest-leverage change the research implies. The `Z ≤ −2` alert / `Z ≤ −1.5` watch pair is a **calibration starting point, not a universal biological limit**; MAD is preferred because cloud contamination and management events create outliers |
+| Q8 | Health-score weights (§3) | ARVI/OSAVI/NDVI/NDMI = `.30/.30/.20/.20` — per `current-thresholds.md` §3 (`vegetation_indices.py:232–242`); **not re-checked in the 2026-08-03 audit** | **No source supports any weighting.** Nothing in this research proposes or validates a composite weighting of these four indices | **Retract the "research-backed" wording** | — | Not reported | §6 flags the phrase "research-backed" as uncited; this research does not rescue it. Note the interaction with Q2: if OSAVI is numerically identical to NDVI as stored, then 0.30 of this composite is a duplicate of the 0.20 NDVI term. See Open question 3 |
+| Q5 | Baseline min samples / seasons (§5) | `3` / meteorological — `baseline.py:26` (`MIN_SAMPLES`) and `:18–23` (season month lists) | Phenology-aware, locally calibrated windows rather than fixed meteorological months; a rolling **21–45-day** baseline window; compare like-with-like (spring vs spring). Olive is evergreen — expect a **modulated plateau**, not a deciduous green-up/senescence curve | **Refine** | S15, S16, S17, S6, S13 | Not reported | **No source states a minimum sample count**, so `MIN_SAMPLES = 3` is neither supported nor refuted (Open question 3). Watch the winter trap: NDVI/OSAVI can rise Nov–Feb because of **inter-row grass after winter rain**, not olive recovery |
+| Q1 | Index set for sparse olive canopy (§1) | NDVI + NDMI + ARVI + OSAVI, no canopy-fraction term (`vegetation_indices.py`); bands ingested as **raw DN**, `image_processor.py:239`, `:272` | **OSAVI + MCARI2/OSAVI + canopy fraction + a soil/grass mask**, with NDVI kept as a reference/cover proxy; add red-edge and thermal where available. Model the mixed pixel: `VI_pixel = f_olive·VI_olive + (1−f_olive)·VI_background` | **Refine — but fix reflectance scaling first** | S6, S7, S8 | Not reported | Two independent gaps. (a) **No radiometric scaling** — see third headline callout; ratio indices are scale-invariant so NDVI/ARVI survive, but any index with an additive constant (OSAVI) does not. (b) **No canopy-fraction term and no inter-row mask**, so every index we compute is a mixed-signal measurement. The literature also asks for surface reflectance rather than TOA, and a fixed band convention (B4/B8; do not mix B8 and B8A without recalibration) |
 | Q6 | 10 m pixel as the unit of assessment (§1–§2) | Sentinel-2 10 m pixel treated as a canopy measurement | Use 10 m for **orchard-scale and within-orchard temporal monitoring only**. Minimum defensible disease feature set: OSAVI or NDVI + red-edge + canopy fraction + seasonal anomaly + thermal/moisture, validated against field-labelled trees or plots | **Scope limit — per-tree diagnosis is out of reach** | S6, S7, S8 | Not reported | A 10 m pixel mixes crown, bare soil, shadow, grass and sometimes other crops. Saturation (dense crowns) *and* dilution (sparse crowns) both occur, so a weak index response does **not** imply weak tree stress. Absolute thresholds transfer poorly between orchards |
-| Q8 | Uncited ARVI/OSAVI↔disease r² claim (§6) | r² = 0.73–0.76, uncited, asserted for disease incidence **and** severity | Cite as **"r² > 0.7 (Hornero et al. 2020)"** and only for **seasonal change in ARVI/OSAVI, at orchard scale, for Xylella-associated decline, in a pipeline that corrects for canopy structure/season/soil background** | **Correct — do not simply re-cite** | S1, S2, S3, S4, S5 | Not reported | The `0.73–0.76` range is still unconfirmed (full-text results table not extracted). See the second headline callout: our static-threshold, Sentinel-2-only use of this number is a category error. Verticillium attribution must be dropped — see Open question 2 |
+| Q8 | Uncited ARVI/OSAVI↔disease r² claim (§6) | `r² = 0.73–0.76`, uncited — appears **twice**: `vegetation_indices.py:89–90` (ARVI ↔ disease incidence and severity) and `:133–134` (OSAVI ↔ "field observations"). Same identical range, two different claims | Cite as **"r² > 0.7 (Hornero et al. 2020)"** and only for **seasonal change in ARVI/OSAVI, at orchard scale, for Xylella-associated decline, in a pipeline that corrects for canopy structure/season/soil background** | **Correct — do not simply re-cite** | S1, S2, S3, S4, S5 | Not reported | The `0.73–0.76` range is still unconfirmed (full-text results table not extracted), and the identical range being attached to two different claims is itself a provenance signal — see Open questions 1 and 5. See the second headline callout: our static-threshold, Sentinel-2-only use of this number is a category error |
 
 ### Open questions / unresolved after research
 
@@ -350,19 +373,29 @@ as settled by T4._
    *Also note:* Apulia is a different region from this product's validation grove, so regional
    transferability is a separate unresolved question.
 
-2. **Verticillium attribution — narrow the product's disease scope.**
+2. **Pathogen attribution — forward-looking guidance, not a retraction.**
    ARVI and OSAVI are **not validated as Verticillium-specific predictors**. Navrozidis et al. 2019
    (S11) *did* map Verticillium-associated stress from Sentinel-2, so there is a detectable stress
    signal. But the evidence that actually **discriminates** the pathogen — Calderón et al. 2015
    (S3), Poblete et al. 2021 (S5) — rests on **airborne hyperspectral and thermal data this pipeline
    does not have**. Xylella and Verticillium both disrupt xylem function and produce similar
    water-stress-like symptoms.
-   **The defensible position is that Sentinel-2 can flag stress but CANNOT attribute it to
-   Verticillium specifically.** That is deliberately weaker than "no detectable signal" — the
-   stronger claim is *not* supported by this research and must not be written into product copy.
-   **Recording the consequence:** the product's disease scope is being narrowed to
-   **Xylella-associated decline** on this basis. *(Any corresponding change to code or product copy
-   is out of scope for this document and is being handled separately.)*
+   **The defensible position is that Sentinel-2 multispectral data can flag stress but CANNOT
+   attribute it to a specific pathogen.** That is deliberately weaker than "no detectable signal" —
+   the stronger claim is *not* supported by this research and must not be written into product copy.
+
+   **Correction to this task's own premise.** The read-only codebase audit (2026-08-03) found
+   **zero occurrences of "Verticillium" anywhere in the repository** — there is no Verticillium
+   claim to retract. "Xylella" appears only in internal notes (`Claude.md:295`,
+   `SESSION-2026-01-15.md:267`) and on no user-facing surface. The **only** user-facing disease
+   language in the entire product is one sentence at `alerts.py:107` — *"This may indicate
+   vegetation stress, disease, or physical damage."* — which reaches users via the UI, the API and
+   owner emails. That sentence is already non-attributive and is consistent with what the literature
+   supports.
+   **So: the restriction of disease scope to Xylella-associated decline is guidance for the dossier
+   and for any future disease claim — a guardrail, not a rollback.** The product should not acquire
+   a pathogen-attribution claim it does not currently make. *(Any code or copy change is out of
+   scope for this document.)*
 
 3. **Questions the eight research comments did not actually answer.** Genuine gaps, distinct from
    "the literature says no":
@@ -391,6 +424,27 @@ as settled by T4._
    index; if Sentinel-2 cannot supply the band, that is a hard ceiling on satellite-only **severity**
    estimation and belongs in the dossier's limitations section.
 
+5. **An in-repo citation that cannot be matched to any identified publication.** `Claude.md:295`
+   and `SESSION-2026-01-15.md:267` both attribute the `r² = 0.73–0.76` figure to **"Hornero et al.
+   (2019)"**. The papers actually identified in this research are **Hornero et al. 2018** (IGARSS)
+   and **Hornero et al. 2020** (Remote Sensing of Environment); **no 2019 Hornero paper appeared in
+   the research at all**, and the 2020 abstract reports the result as `r² > 0.7`, not as
+   `0.73–0.76`. So **both the year and the precision of the figure are unresolved**, and the same
+   range is attached to two different claims in the code (`vegetation_indices.py:89–90` and
+   `:133–134`).
+   Stated neutrally: this is a **provenance gap** — the in-repo citation cannot currently be matched
+   to an identified publication. It is *not* an assertion that anything was fabricated; a 2019
+   paper, preprint, conference version or a mis-typed year may well exist and simply did not surface
+   in this research. Resolving it requires either locating a real Hornero 2019 record or extracting
+   the results table from Hornero 2020. Until then, do not propagate "Hornero et al. (2019)" or the
+   `0.73–0.76` range anywhere.
+
+6. **Reflectance scaling blocks the Q2 answer entirely.** Recorded here so it is not lost between
+   the callout and the table: with bands ingested as raw DN, `L = 0.16` is inert and OSAVI is
+   numerically NDVI as stored. Whether the *literature's* `L` guidance (S9, S6, S7) improves this
+   product is therefore **untestable today** — the question cannot be settled by more reading, only
+   by fixing scaling and re-measuring. Sequence accordingly. *(Code fix out of scope here.)*
+
 ## C. Recording rules
 
 - **One source, one block.** Do not merge multiple papers into one citation.
@@ -414,7 +468,9 @@ calls were made; flagging them so they can be overruled:
 3. **A `Q#` and a `Verdict` column were added** to the consolidated table, and `Proposed value` was
    relabelled `Proposed value (literature-supported)`. The original eight rows are **unchanged and
    in their original order**; three rows (Q1, Q6, Q8-r²) were appended so all eight §A questions are
-   covered. `Confidence` was kept even though the research recorded no confidence ratings.
+   covered. `Confidence` was kept even though the research recorded no confidence ratings. The
+   `Current value` column now carries confirmed `file:line` citations from the 2026-08-03 code
+   audit — a different provenance from the literature columns, flagged in the table preamble.
 4. **Papers cited under several questions get one block**, per the §C "one source, one block" rule,
    with the questions listed in `Applies to which of our params`. Contradictions between papers
    (e.g. S8's hedgerow NDVI figures vs S14's super-high-density orchard) are left standing in their
