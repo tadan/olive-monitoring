@@ -3,6 +3,34 @@ from typing import Tuple
 
 import numpy as np
 
+# Surface reflectance is nominally [0, 1]. Atmospheric correction can push
+# individual pixels a little outside that, so the check is deliberately loose —
+# it only needs to separate reflectance from raw digital numbers, which are
+# three orders of magnitude larger.
+REFLECTANCE_UPPER_BOUND = 2.0
+
+
+def _require_reflectance(name: str, band: np.ndarray) -> None:
+    """Raise if a band looks like raw digital numbers rather than reflectance.
+
+    Only the indices whose maths is scale-dependent need this. NDVI, NDMI and
+    ARVI are ratios of homogeneous expressions and give identical results for
+    DN and reflectance input; OSAVI's additive soil factor does not, and
+    silently degrades to NDVI when handed DN.
+    """
+    finite = band[np.isfinite(band)]
+    if finite.size == 0:
+        return
+
+    peak = float(np.max(np.abs(finite)))
+    if peak > REFLECTANCE_UPPER_BOUND:
+        raise ValueError(
+            f"{name} band looks like raw digital numbers (max |value| {peak:.1f}), "
+            f"not reflectance in [0, 1]. Convert it first with "
+            f"app.reflectance.dn_to_reflectance — the OSAVI soil factor L is "
+            f"inert against DN and collapses OSAVI onto NDVI."
+        )
+
 
 def calculate_ndvi(red: np.ndarray, nir: np.ndarray) -> np.ndarray:
     """
@@ -134,17 +162,25 @@ def calculate_osavi(red: np.ndarray, nir: np.ndarray, soil_factor: float = 0.16)
     (r²=0.73-0.76) and is particularly effective for tree crops with soil exposure.
 
     Args:
-        red: Red band array (Band 4 for Sentinel-2)
-        nir: Near-infrared band array (Band 8 for Sentinel-2)
+        red: Red band **surface reflectance** array (Band 4 for Sentinel-2)
+        nir: Near-infrared **surface reflectance** array (Band 8 for Sentinel-2)
         soil_factor: Soil brightness correction factor (default 0.16)
                      Standard value is 0.16 for optimal performance
 
     Returns:
         OSAVI array with same shape as input
+
+    Raises:
+        ValueError: if the inputs are raw digital numbers rather than
+            reflectance, which would make the soil adjustment inert.
     """
     # Convert to float
     red = red.astype(np.float32)
     nir = nir.astype(np.float32)
+
+    # L=0.16 is defined against reflectance; DN input makes it a no-op.
+    _require_reflectance("red", red)
+    _require_reflectance("nir", nir)
 
     # Calculate OSAVI with zero division handling
     with np.errstate(divide='ignore', invalid='ignore'):
