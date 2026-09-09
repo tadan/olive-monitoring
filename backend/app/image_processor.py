@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import FieldZone, HealthIndex, SatelliteImage
+from app.reflectance import dn_to_reflectance, load_scaling_metadata
 from app.vegetation_indices import (
     calculate_arvi,
     calculate_health_score,
@@ -204,6 +205,14 @@ class ImageProcessor:
             if product_path.suffix == '.zip':
                 product_path = self.extract_product_path(product_path)
 
+            # Radiometric scaling parameters come from the product itself: the
+            # quantification value and, on baseline 04.00+, the per-band offset.
+            scaling = load_scaling_metadata(product_path)
+            logger.debug(
+                f"Scaling: quantification={scaling.quantification_value}, "
+                f"offsets={scaling.offsets or 'none (pre-baseline 04.00)'}"
+            )
+
             bands = {}
             reference_shape = None
             reference_transform = None
@@ -235,9 +244,18 @@ class ImageProcessor:
                     # Extract first band (imagery is often single-band per file)
                     band_data = out_image[0]
 
-                    # Convert nodata values to NaN
+                    # Convert nodata values to NaN. This must happen before
+                    # scaling: DN 0 means "no data", but a reflectance of 0.0
+                    # is a legitimate measurement.
                     band_data = band_data.astype(np.float32)
                     band_data[band_data == 0] = np.nan
+
+                    # DN -> surface reflectance
+                    band_data = dn_to_reflectance(
+                        band_data,
+                        quantification_value=scaling.quantification_value,
+                        add_offset=scaling.offset_for(band_name),
+                    )
 
                     bands[band_key] = band_data
 
@@ -284,8 +302,15 @@ class ImageProcessor:
                     resampling=Resampling.bilinear
                 )
 
-                # Convert nodata values to NaN
+                # Convert nodata values to NaN (before scaling, as above)
                 band_data_10m[band_data_10m == 0] = np.nan
+
+                # DN -> surface reflectance
+                band_data_10m = dn_to_reflectance(
+                    band_data_10m,
+                    quantification_value=scaling.quantification_value,
+                    add_offset=scaling.offset_for(band_name),
+                )
 
                 bands[band_key] = band_data_10m
                 logger.debug(f"Resampled {band_key} from {band_data_20m.shape} to {band_data_10m.shape}")
