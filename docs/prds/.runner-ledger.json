@@ -18,5 +18,15 @@
     "pr_url": "https://github.com/tadan/olive-monitoring/pull/7",
     "tokens_estimate": 60000,
     "notes": "human_in_loop PRD; did only AGENT-tagged unblocked tasks (T1, T2), then STOPPED. T3 is USER (Elicit research); T4 blocked until template filled. Docs-only. Gate green: ruff + pytest (22 passed). PR url filled after gh."
+  },
+  {
+    "date": "2026-09-09",
+    "prd": "PRD-005",
+    "task": "none",
+    "task_desc": "No eligible AGENT task remaining. T1+T2 (scaffolding) already done on this branch with PR #7 open. T3 is USER literature research (still done:false); PRD notes gate T4 on T3 completion, so T4 not yet eligible.",
+    "branch": "DAN-10-prd-005-validation-dossier",
+    "pr_url": "https://github.com/tadan/olive-monitoring/pull/7",
+    "tokens_estimate": 9000,
+    "notes": "No-op run. human_in_loop respected: agent stopped and waits for the user to run Elicit + fill the findings template (T3) before assembling the cited dossier (T4). No invented citations or thresholds."
   }
 ]
