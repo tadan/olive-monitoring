@@ -277,8 +277,8 @@ class BaselineManager:
             return False, None
 
         # Calculate deviation from baseline
-        deviation = abs(value - baseline.mean_value)
-        threshold = std_dev_threshold * baseline.std_dev
+        deviation = abs(float(value) - float(baseline.mean_value))
+        threshold = std_dev_threshold * float(baseline.std_dev)
 
         is_anomalous = deviation > threshold
 

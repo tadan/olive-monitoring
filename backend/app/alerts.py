@@ -108,7 +108,7 @@ class AlertDetector:
                 ),
                 metric='ndvi',
                 metric_value=current_health.ndvi_mean,
-                threshold_value=previous.ndvi_mean + self.NDVI_DROP_THRESHOLD,
+                threshold_value=float(previous.ndvi_mean) + self.NDVI_DROP_THRESHOLD,
                 status='active'
             )
 
