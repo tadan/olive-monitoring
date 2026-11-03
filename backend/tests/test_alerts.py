@@ -42,6 +42,8 @@ def test_ndvi_drop_alert_is_built_from_decimal_columns(db_session):
 
     assert alert is not None
     assert alert.alert_type == "ndvi_drop"
+    assert "satellite imagery alone cannot identify the cause" in alert.description
+    assert "disease" not in alert.description.lower()
     # 0.55 previous + (-0.15) threshold = the NDVI at which the alert would trip
     assert float(alert.threshold_value) == 0.40
 

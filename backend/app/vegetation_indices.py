@@ -114,8 +114,12 @@ def calculate_arvi(red: np.ndarray, nir: np.ndarray, blue: np.ndarray) -> np.nda
     - 0.4-0.6: Moderate vegetation
     - > 0.6: Dense healthy vegetation
 
-    Research shows ARVI correlates strongly with disease incidence and severity
-    (r²=0.73-0.76) in olive groves, making it excellent for health monitoring.
+    Hornero et al. (2020, doi:10.1016/j.rse.2019.111480) found that
+    year-to-year ARVI change tracked Xylella incidence change in Apulian
+    orchards (r²=0.75). The broader study used airborne imagery, field
+    observations and 3-D canopy modelling to address background effects.
+    This single-date index is not a disease diagnostic or a validated
+    threshold for this product.
 
     Args:
         red: Red band array (Band 4 for Sentinel-2)
@@ -158,8 +162,12 @@ def calculate_osavi(red: np.ndarray, nir: np.ndarray, soil_factor: float = 0.16)
     - 0.4-0.6: Moderate vegetation coverage
     - > 0.6: Dense vegetation
 
-    Research shows OSAVI achieves high correlation with field observations
-    (r²=0.73-0.76) and is particularly effective for tree crops with soil exposure.
+    Hornero et al. (2020, doi:10.1016/j.rse.2019.111480) found that
+    year-to-year OSAVI change tracked Xylella incidence change in Apulian
+    orchards (r²=0.76). The broader study used airborne imagery and 3-D
+    canopy modelling to address seasonal soil and understory effects.
+    This single-date index is not a disease diagnostic or a validated
+    threshold for this product.
 
     Args:
         red: Red band **surface reflectance** array (Band 4 for Sentinel-2)
