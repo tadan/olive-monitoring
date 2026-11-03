@@ -104,7 +104,9 @@ class AlertDetector:
                 description=(
                     f"NDVI dropped by {abs(ndvi_change):.3f} "
                     f"(from {previous.ndvi_mean:.3f} to {current_health.ndvi_mean:.3f}). "
-                    f"This may indicate vegetation stress, disease, or physical damage."
+                    "Check the grove for water stress or canopy damage. Compare recent "
+                    "pruning, ground cover and image quality before acting; satellite "
+                    "imagery alone cannot identify the cause."
                 ),
                 metric='ndvi',
                 metric_value=current_health.ndvi_mean,
