@@ -100,7 +100,7 @@ class AlertDetector:
                 zone_id=zone_id,
                 alert_type='ndvi_drop',
                 severity=severity,
-                title=f"Vegetation Loss Detected in {self._get_zone_name(zone_id)}",
+                title=f"Vegetation signal decreased in {self._get_zone_name(zone_id)}",
                 description=(
                     f"NDVI dropped by {abs(ndvi_change):.3f} "
                     f"(from {previous.ndvi_mean:.3f} to {current_health.ndvi_mean:.3f}). "
