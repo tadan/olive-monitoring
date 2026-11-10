@@ -244,7 +244,7 @@ curl http://localhost:8000/health                    # Direct to API (internal n
 8. ✅ Deployed to production NAS and verified
 
 **Feature Implemented:**
-- **ARVI**: Reduces atmospheric interference using Blue band self-correction (r²=0.73-0.76 with olive disease)
+- **ARVI**: Reduces atmospheric interference using Blue band self-correction. The original disease-correlation claim was overstated; see the research correction below.
 - **OSAVI**: Corrects for soil background effects in sparse olive canopy (3x error reduction vs basic indices)
 - **Multi-Index Health Score**: Weighted composite of 4 indices for more robust health assessment
 - **Backward Compatibility**: Gracefully falls back to NDVI+NDMI for existing data
@@ -292,7 +292,7 @@ Health Score = (ARVI_norm × 0.30) + (OSAVI_norm × 0.30) + (NDVI_norm × 0.20) 
 - Next satellite pass (~5 days) will automatically include ARVI/OSAVI values
 
 **Research Foundation:**
-- Hornero et al. (2019): ARVI achieves r²=0.73-0.76 correlation with Xylella disease in olive trees
+- Hornero et al. (2020), doi:10.1016/j.rse.2019.111480: year-to-year ARVI and OSAVI change tracked Xylella incidence change in Apulian orchards (r²=0.75 and 0.76, respectively). The study combined Sentinel-2, airborne imagery, field observations and 3-D modelling; these values do not validate this app's single-date thresholds or diagnose a pathogen.
 - Rondeaux et al. (1996): OSAVI L=0.16 optimized for intermediate canopy cover
 - Zarco-Tejada et al. (2018): Multi-index approach reduces error by 3x vs single indices
 
